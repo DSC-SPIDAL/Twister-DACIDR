@@ -53,12 +53,25 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MDSShortMatrixData {
-
+	public MDSShortMatrixData() {
+	}
+	public MDSShortMatrixData(short[][] data, int height, int width, int row,
+			int rowOffset) {
+		this.data = data;
+		this.height = height;
+		this.width = width;
+		this.row = row;
+		this.rowOffset = rowOffset;
+	}
+	
 	short[][] data;
 	int height;
 	int width;
@@ -129,5 +142,32 @@ public class MDSShortMatrixData {
 
 	public void setRow(int row) {
 		this.row = row;
+	}
+	
+	/**
+	 * Write the vector data into a binary file.
+	 * 
+	 * @param fileName
+	 * @throws IOException
+	 */
+	public void writeToBinFile(String fileName) throws IOException {
+		BufferedOutputStream bout = new BufferedOutputStream(
+				new FileOutputStream(fileName));
+		DataOutputStream dout = new DataOutputStream(bout);
+
+		// First two parameters are the dimensions.
+		//dout.writeInt(height);
+		//dout.writeInt(width);
+		//dout.writeInt(row);
+		//dout.writeInt(rowOffset);
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				dout.writeShort(data[i][j]);
+			}
+		}
+		dout.flush();
+		bout.flush();
+		dout.close();
+		bout.close();
 	}
 }

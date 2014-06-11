@@ -14,8 +14,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import cgl.imr.samples.mds.yang.nfs.MDSShortMatrixData;
-
 public class MDSShortDataSplit {
 	public static void main(String[] args) {
 		if (args.length != 8) {
