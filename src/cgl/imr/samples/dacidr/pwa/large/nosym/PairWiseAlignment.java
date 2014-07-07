@@ -29,7 +29,7 @@ public class PairWiseAlignment {
 	public static double drivePWAMapReduce(int numOfMapTasks, int numOfReduceTasks,
 			int numOfSequences, int numOfPartitions, String rowDataDir,
 			String rowGeneBlockPrefix, String colDataDir, String colGeneBlockPrefix, String outputDataDir,
-			String outputPrefix, String outputFile, String type, String matrixType, String seqType)
+			String outputPrefix, String type, String matrixType, String seqType)
 	throws TwisterException {
 		// Total computable blocks (n * (n + 1)) / 2 , 
 		// i.e. lower or upper triangle blocks including diagonal blocks
@@ -76,7 +76,6 @@ public class PairWiseAlignment {
 			Map<Key, Value> outmap = ((GenericCombiner) driver
 					.getCurrentCombiner()).getResults();
 			driver.close();
-			writeMapFile(outmap, outputFile);
 			double end = System.currentTimeMillis();
 			System.out.println("The writing file time is: " + (end - start)/1000.0);
 		} catch (Exception e) {
@@ -86,18 +85,6 @@ public class PairWiseAlignment {
 			throw new TwisterException(e);
 		}
 		return monitor.getTotalSequentialTimeSeconds();
-	}
-
-	private static void writeMapFile(Map<Key, Value> map, String fileName) throws IOException{
-		BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
-		Iterator<Key> ite = map.keySet().iterator();
-		while(ite.hasNext()){
-			StringKey key = (StringKey)ite.next();
-			StringValue val = (StringValue)map.get(key);
-			bw.write(key.getString() + " " + val.toString() + "\n");
-		}
-		bw.flush();
-		bw.close();
 	}
 
 	private static List<Block> buildComputingBlocks(int numOfPartitions) {
@@ -155,12 +142,12 @@ public class PairWiseAlignment {
 
 	public static void main(String args[]) {
 
-		if (args.length != 14) {
+		if (args.length != 13) {
 			System.err
 			.println("args:  [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] " +
 			"[num_of_partitions] [row_input_data_dir] [row_gene_block_prefix] " +
 			"[col_input_data_dir] [col_gene_block_prefix] " +
-			"[output_data_dir] [tmp_output_prefix] [output_map_file] [aligner type]" +
+			"[output_data_dir] [tmp_output_prefix] [aligner type]" +
 			"[score matrix type] [sequence type]");
 			System.exit(2);
 		}
@@ -175,10 +162,9 @@ public class PairWiseAlignment {
 		String colGeneBlockPrefix = args[7];
 		String outputDataDir = args[8];
 		String outputPrefix = args[9];
-		String outputFile = args[10];
-		String type = args[11];
-		String matrixType = args[12];
-		String seqType = args[13];
+		String type = args[10];
+		String matrixType = args[11];
+		String seqType = args[12];
 
 		if ( !outputPrefix.endsWith("_") ) {
 			System.err.println("ERROR: The output file prefix must end with an underscore (\"_\").");
@@ -202,7 +188,7 @@ public class PairWiseAlignment {
 		try {
 			sequentialTime = drivePWAMapReduce(numOfMapTasks, numOfReduceTasks, numOfSeqs,
 					numOfPartitions, rowDataDir, rowGeneBlockPrefix, colDataDir, 
-					colGeneBlockPrefix, outputDataDir, outputPrefix, outputFile, type, matrixType, seqType);
+					colGeneBlockPrefix, outputDataDir, outputPrefix, type, matrixType, seqType);
 
 		} catch (TwisterException e) {
 			e.printStackTrace();

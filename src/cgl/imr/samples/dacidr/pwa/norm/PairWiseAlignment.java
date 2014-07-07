@@ -1,6 +1,5 @@
 package cgl.imr.samples.dacidr.pwa.norm;
 
-import java.io.*;
 import java.util.*;
 
 import org.safehaus.uuid.UUIDGenerator;
@@ -15,7 +14,6 @@ import cgl.imr.base.impl.JobConf;
 import cgl.imr.client.TwisterDriver;
 import cgl.imr.types.BytesValue;
 import cgl.imr.types.StringKey;
-import cgl.imr.types.StringValue;
 
 /**
  * @author Saliya Ekanayake (sekanaya at cs dot indiana dot edu)
@@ -28,7 +26,7 @@ public class PairWiseAlignment {
 
 	public static double drivePWAMapReduce(int numOfMapTasks, int numOfReduceTasks,
 			int numOfSequences, int numOfPartitions, String dataDir,
-			String geneBlockPrefix, String outputPrefix, String outputFile, String type, String matrixType, String seqType)
+			String geneBlockPrefix, String outputPrefix, String type, String matrixType, String seqType)
 	throws TwisterException {
 
 		// Total computable blocks (n * (n + 1)) / 2 , i.e. lower or upper triangle blocks including diagonal blocks
@@ -74,8 +72,6 @@ public class PairWiseAlignment {
 			Map<Key, Value> outmap = ((GenericCombiner) driver
 					.getCurrentCombiner()).getResults();
 			driver.close();
-			//writeFinalMatrix(outmap, outputFile,  numOfSequences,  numOfPartitions);
-			writeMapFile(outmap, outputFile);
 			double end = System.currentTimeMillis();
 			System.out.println("The writing file time is: " + (end - start)/1000.0);
 			//String distanceFile = "distance_" + numOfSequences + "x" + numOfSequences + ".bin";
@@ -90,60 +86,6 @@ public class PairWiseAlignment {
 		//return monitor.getTotalSequentialTimeSeconds();
 		return 0;
 	}
-
-	private static void writeMapFile(Map<Key, Value> map, String fileName) throws IOException{
-		BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
-		Iterator<Key> ite = map.keySet().iterator();
-		while(ite.hasNext()){
-			StringKey key = (StringKey)ite.next();
-			StringValue val = (StringValue)map.get(key);
-			bw.write(key.getString() + " " + val.toString() + "\n");
-		}
-		bw.flush();
-		bw.close();
-	}
-	//    private static void writeFinalMatrix(Map<Key, Value> map, String fname, int numOfSequences, int numOfPartitions)
-	//            throws IOException {
-	//        StringValue[] values = new StringValue[map.values().size()];
-	//        values = map.values().toArray(values);
-	//        Comparator<StringValue> c =new Comparator<StringValue>() {
-	//            @Override
-	//            public int compare(StringValue o1, StringValue o2) {
-	//                String one = o1.toString();
-	//                String two = o2.toString();
-	//                return Integer.parseInt(one.substring(one.lastIndexOf("_") + 1))
-	//                        - Integer.parseInt(two.substring(two.lastIndexOf("_")+1));
-	//            }
-	//        };
-	//        Arrays.sort(values, c);
-	//
-	//        int seqsPerPart = numOfSequences/numOfPartitions;
-	//        int remainder = numOfSequences % numOfPartitions;
-	//        int suffix;
-	//        int rowSize;
-	//        String f;
-	//
-	//        DataInputStream dis;
-	//        DataOutputStream dos = new DataOutputStream(new FileOutputStream(fname));
-	//
-	//        for (StringValue v : values) {
-	//            f = v.toString();
-	//            suffix = Integer.parseInt(f.substring(f.lastIndexOf("_") + 1));
-	//            rowSize = suffix < remainder ? seqsPerPart + 1 : seqsPerPart;
-	//            dis = new DataInputStream(new FileInputStream(f));
-	//
-	//            for (int i = 0; i < rowSize; i++){
-	//                for (int j = 0; j < numOfSequences; j++) {
-	//                    dos.writeShort(dis.readShort());
-	//                }
-	//            }
-	//            dis.close();
-	//        }
-	//        dos.flush();
-	//        dos.close();
-	//
-	//
-	//    }
 
 	private static List<Block> buildComputingBlocks(int numOfPartitions) {
 		List<Block> blocks = new ArrayList<Block>();
@@ -206,11 +148,11 @@ public class PairWiseAlignment {
 
 	public static void main(String args[]) {
 
-		if (args.length != 11) {
+		if (args.length != 10) {
 			System.err.println("THis generates pid_ as well");
 			System.err
 			.println("args:  [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] " +
-			"[num_of_partitions] [data_dir] [gene_block_prefix] [tmp_output_prefix] [output_map_file] [aligner type]" +
+			"[num_of_partitions] [data_dir] [gene_block_prefix] [tmp_output_prefix] [aligner type]" +
 			"[score matrix type] [sequence type]");
 			System.exit(2);
 		}
@@ -223,10 +165,9 @@ public class PairWiseAlignment {
 		String dataDir = args[4];
 		String geneBlockPrefix = args[5];
 		String outputPrefix = args[6];
-		String outputFile = args[7];
-		String type = args[8];
-		String matrixType = args[9];
-		String seqType = args[10];
+		String type = args[7];
+		String matrixType = args[8];
+		String seqType = args[9];
 
 		if ( !outputPrefix.endsWith("_") ) {
 			System.err.println("ERROR: The output file prefix must end with an underscore (\"_\").");
@@ -250,7 +191,7 @@ public class PairWiseAlignment {
 		double sequentialTime = 0;
 		try {
 			sequentialTime = drivePWAMapReduce(numOfMapTasks, numOfReduceTasks, numOfSeqs,
-					numOfPartitions, dataDir, geneBlockPrefix, outputPrefix, outputFile, type, matrixType, seqType);
+					numOfPartitions, dataDir, geneBlockPrefix, outputPrefix, type, matrixType, seqType);
 
 		} catch (TwisterException e) {
 			e.printStackTrace();
