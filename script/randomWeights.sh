@@ -63,4 +63,4 @@ done
 for i in ${TWISTER_HOME}/apps/*.jar;
   do cp=$i:${cp}
 done
-java -Xmx20000m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.seq.mds.tools.RandomWeightMatrixGenerator $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20}
+java -Xmx20000m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.dacidr.wdasmacof.tools.RandomWeightMatrixGenerator $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20}

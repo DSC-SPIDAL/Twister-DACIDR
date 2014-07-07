@@ -63,4 +63,4 @@ for i in ${TWISTER_HOME}/apps/*.jar;
   do cp=$i:${cp}
 done
 #echo $cp
-java -Xmx2000m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.pwa.util.GenePartition $1 $2 $3 $4 $5 $6 $7 $8
+java -Xmx2000m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.dacidr.pwa.util.GenePartition $1 $2 $3 $4 $5 $6 $7 $8

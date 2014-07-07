@@ -16,11 +16,9 @@ import edu.indiana.salsahpc.MatrixUtil;
 import edu.indiana.salsahpc.Sequence;
 import edu.indiana.salsahpc.SequenceParser;
 import edu.indiana.salsahpc.SimilarityMatrix;
-import edu.indiana.salsahpc.SmithWatermanAligner;
 
 import org.biojava3.alignment.template.SubstitutionMatrix;
 import org.biojava3.core.sequence.ProteinSequence;
-import org.biojava3.core.sequence.compound.NucleotideCompound;
 
 import java.io.File;
 import java.io.IOException;

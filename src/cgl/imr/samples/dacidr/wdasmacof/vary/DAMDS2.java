@@ -1,8 +1,8 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
 /**
- * @author Seung-Hee Bae: sebae@cs.indiana.edu
- *		Twister-DAMDS is implemented based on Twister-MDS.
+ * @author Yang Ruan: yangruan@cs.indiana.edu
+ *		Twister-WDAMDS is implemented based on Twister-MDS.
  */
 
 import java.io.BufferedReader;
@@ -305,19 +305,6 @@ public class DAMDS2 {
 			
 		}
 		return X;
-	}
-	
-	private static double[][] matrixMinus(double[][] X, double[][] Y) {
-		double[][] Z = new double[X.length][X[0].length];
-		if (X.length != Y.length || X[0].length != Y[0].length) {
-			System.out.println("Error!");
-		}
-		for (int i = 0; i < X.length; ++i) {
-			for (int j = 0; j < X[0].length; ++j) {
-				Z[i][j] = X[i][j] - Y[i][j];
-			}
-		}
-		return Z;
 	}
 	
 	private static void writeOuput(double[][] x, String outputFile)
@@ -672,7 +659,6 @@ public class DAMDS2 {
 		jobConf.addProperty("InputPrefix", inputPrefix);
 		jobConf.addProperty("WeightPrefix", weightedPrefix);
 		jobConf.addProperty("IdsFile", idsFile);
-//		jobConf.setFaultTolerance();
 
 		TwisterModel driver = null;
 		TwisterMonitor monitor = null;
