@@ -10,28 +10,8 @@ package cgl.imr.samples.dacidr.wdasmacof.fix;
  * 
  */
 public class MatrixUtils {
-
-	/**
-	 * Block matrix multiplication.
-	 * 
-	 * @param A
-	 *            - Matrix
-	 * @param Adiag
-	 * 			  - Diag value of A
-	 * @param B
-	 *            - Matrix
-	 * @param aHeight
-	 *            - height of matrix A
-	 * @param bWidth
-	 *            - width of matrix B
-	 * @param comm
-	 *            - size of the common face
-	 * @param rowOffset
-	 * 			  - offset from row index to col index
-	 * @return
-	 */
-	public static double[][] matrixMultiply(short[][] A, double[] Adiag, double[][] B,
-			int aHeight, int bWidth, int comm, int bz, int rowOffset) {
+	public static double[][] matrixMultiplyInSample(short[][] A, double[] Adiag, double[][] B,
+			int aHeight, int bWidth, int comm, int bz, int rowOffset, int inSampleSize, boolean inSample) {
 
 		double[][] C = new double[aHeight][bWidth];
 
@@ -74,20 +54,26 @@ public class MatrixUtils {
 					}
 
 					for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
-						for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
-							for (int k = kb * bz; k < (kb * bz)
-									+ commBlockWidth; k++) {
-								double aVal = 0;
-								if (i + rowOffset == k) {
-									aVal = Adiag[i];
+						if (i + rowOffset>= inSampleSize) {
+							for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
+								for (int k = kb * bz; k < (kb * bz)
+										+ commBlockWidth; k++) {
+									double aVal = 0;
+
+									if (i + rowOffset == k) {
+										aVal = Adiag[i];
+									}
+									else {
+										//reverse the value from weight
+										aVal = -(double)A[i][k];
+									}
+
+									//System.out.print(aVal);
+									if((inSample && k < inSampleSize 
+											|| !inSample && k >= inSampleSize) 
+											&& aVal != 0 && B[k][j]!= 0)
+										C[i][j] += aVal * B[k][j];
 								}
-								else {
-									//reverse the value from weight
-									aVal = -(double)A[i][k];
-								}
-								
-								if(aVal != 0 && B[k][j]!= 0)
-									C[i][j] += aVal * B[k][j];
 							}
 						}
 					}
@@ -96,26 +82,89 @@ public class MatrixUtils {
 		}
 
 		return C;
-	}
+	}	
+	
+//	public static double[][] matrixMultiplyOutSample(short[][] A, double[] Adiag, double[][] B,
+//			int aHeight, int bWidth, int comm, int bz, int rowOffset, int inSampleSize) {
+//		
+//		double[][] C = new double[aHeight][bWidth];
+//
+//		int aHeightBlocks = aHeight / bz; // size = Height of A
+//		int aLastBlockHeight = aHeight - (aHeightBlocks * bz);
+//		if (aLastBlockHeight > 0) {
+//			aHeightBlocks++;
+//		}
+//
+//		int bWidthBlocks = bWidth / bz; // size = Width of B
+//		int bLastBlockWidth = bWidth - (bWidthBlocks * bz);
+//		if (bLastBlockWidth > 0) {
+//			bWidthBlocks++;
+//		}
+//
+//		int commnBlocks = comm / bz; // size = Width of A or Height of B
+//		int commLastBlockWidth = comm - (commnBlocks * bz);
+//		if (commLastBlockWidth > 0) {
+//			commnBlocks++;
+//		}
+//
+//		int aBlockHeight = bz;
+//		int bBlockWidth = bz;
+//		int commBlockWidth = bz;
+//
+//		for (int ib = 0; ib < aHeightBlocks; ib++) {
+//			if (aLastBlockHeight > 0 && ib == (aHeightBlocks - 1)) {
+//				aBlockHeight = aLastBlockHeight;
+//			}
+//			bBlockWidth = bz;
+//			commBlockWidth = bz;
+//			for (int jb = 0; jb < bWidthBlocks; jb++) {
+//				if (bLastBlockWidth > 0 && jb == (bWidthBlocks - 1)) {
+//					bBlockWidth = bLastBlockWidth;
+//				}
+//				commBlockWidth = bz;
+//				for (int kb = 0; kb < commnBlocks; kb++) {
+//					if (commLastBlockWidth > 0 && kb == (commnBlocks - 1)) {
+//						commBlockWidth = commLastBlockWidth;
+//					}
+//
+//					for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
+//						for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
+//							for (int k = kb * bz; k < (kb * bz)
+//									+ commBlockWidth; k++) {
+//								
+//								double aVal = 0;
+//								if (i + rowOffset == k) {
+//									aVal = Adiag[i];
+//								}
+//								else {
+//									aVal = -(double)A[i][k];
+//								}
+//								if(k >= inSampleSize && aVal != 0 && B[k][j]!= 0) {
+//									if (k > 4639)
+//										System.out.print(k + " ");
+//									C[i][j] += aVal * B[k][j];
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//		return C;
+//	}
 
-	/**
-	 * Block matrix multiplication.
-	 * 
-	 * @param A
-	 *            - Matrix
-	 * @param B
-	 *            - Matrix
-	 * @param aHeight
-	 *            - height of matrix A
-	 * @param bWidth
-	 *            - width of matrix B
-	 * @param comm
-	 *            - size of the common face
-	 * @return
-	 */
-	public static double[][] matrixMultiply(float[][] A, double[][] B,
-			int aHeight, int bWidth, int comm, int bz) {
+	public static double[][] matrixMultiplyInSample(float[][] A, double[][] B,
+			int aHeight, int bWidth, int comm, int bz, int rowOffset, 
+			int inSampleSize, boolean inSample) {
 
+//		System.out.println("aHeight: " + aHeight);
+//		System.out.println("bWidth: " + bWidth);
+//		System.out.println("comm: " + comm);
+//		System.out.println("bz: " + bz);
+//		System.out.println("rowOffset: " + rowOffset);
+//		System.out.println("inSampleSize: " + inSampleSize);
+//		System.out.println("inSample: " + inSample);
+		
 		double[][] C = new double[aHeight][bWidth];
 
 		int aHeightBlocks = aHeight / bz; // size = Height of A
@@ -157,11 +206,15 @@ public class MatrixUtils {
 					}
 
 					for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
-						for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
-							for (int k = kb * bz; k < (kb * bz)
-									+ commBlockWidth; k++) {
-								if(A[i][k]!= 0 && B[k][j]!= 0)
-									C[i][j] += A[i][k] * B[k][j];
+						if (i + rowOffset >= inSampleSize) {
+							for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
+								for (int k = kb * bz; k < (kb * bz)
+										+ commBlockWidth; k++) {
+									if((inSample && k < inSampleSize
+											|| !inSample && k >= inSampleSize) 
+											&& A[i][k]!= 0 && B[k][j]!= 0)
+										C[i][j] += A[i][k] * B[k][j];
+								}
 							}
 						}
 					}
@@ -172,79 +225,64 @@ public class MatrixUtils {
 		return C;
 	}
 	
-	/**
-	 * Block matrix multiplication.
-	 * 
-	 * @param A
-	 *            - Matrix
-	 * @param B
-	 *            - Matrix
-	 * @param aHeight
-	 *            - height of matrix A
-	 * @param bWidth
-	 *            - width of matrix B
-	 * @param comm
-	 *            - size of the common face
-	 * @return
-	 */
-	public static double[][] matrixMultiply(double[][] A, double[][] B,
-			int aHeight, int bWidth, int comm, int bz) {
-
-		double[][] C = new double[aHeight][bWidth];
-
-		int aHeightBlocks = aHeight / bz; // size = Height of A
-		int aLastBlockHeight = aHeight - (aHeightBlocks * bz);
-		if (aLastBlockHeight > 0) {
-			aHeightBlocks++;
-		}
-
-		int bWidthBlocks = bWidth / bz; // size = Width of B
-		int bLastBlockWidth = bWidth - (bWidthBlocks * bz);
-		if (bLastBlockWidth > 0) {
-			bWidthBlocks++;
-		}
-
-		int commnBlocks = comm / bz; // size = Width of A or Height of B
-		int commLastBlockWidth = comm - (commnBlocks * bz);
-		if (commLastBlockWidth > 0) {
-			commnBlocks++;
-		}
-
-		int aBlockHeight = bz;
-		int bBlockWidth = bz;
-		int commBlockWidth = bz;
-
-		for (int ib = 0; ib < aHeightBlocks; ib++) {
-			if (aLastBlockHeight > 0 && ib == (aHeightBlocks - 1)) {
-				aBlockHeight = aLastBlockHeight;
-			}
-			bBlockWidth = bz;
-			commBlockWidth = bz;
-			for (int jb = 0; jb < bWidthBlocks; jb++) {
-				if (bLastBlockWidth > 0 && jb == (bWidthBlocks - 1)) {
-					bBlockWidth = bLastBlockWidth;
-				}
-				commBlockWidth = bz;
-				for (int kb = 0; kb < commnBlocks; kb++) {
-					if (commLastBlockWidth > 0 && kb == (commnBlocks - 1)) {
-						commBlockWidth = commLastBlockWidth;
-					}
-
-					for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
-						for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
-							for (int k = kb * bz; k < (kb * bz)
-									+ commBlockWidth; k++) {
-								if(A[i][k]!= 0 && B[k][j]!= 0)
-									C[i][j] += A[i][k] * B[k][j];
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return C;
-	}
+//	public static double[][] matrixMultiplyOutSample(float[][] A, double[][] B,
+//			int aHeight, int bWidth, int comm, int bz, int startCol) {
+//
+//		double[][] C = new double[aHeight][bWidth];
+//
+//		int aHeightBlocks = aHeight / bz; // size = Height of A
+//		int aLastBlockHeight = aHeight - (aHeightBlocks * bz);
+//		if (aLastBlockHeight > 0) {
+//			aHeightBlocks++;
+//		}
+//
+//		int bWidthBlocks = bWidth / bz; // size = Width of B
+//		int bLastBlockWidth = bWidth - (bWidthBlocks * bz);
+//		if (bLastBlockWidth > 0) {
+//			bWidthBlocks++;
+//		}
+//
+//		int commnBlocks = comm / bz; // size = Width of A or Height of B
+//		int commLastBlockWidth = comm - (commnBlocks * bz);
+//		if (commLastBlockWidth > 0) {
+//			commnBlocks++;
+//		}
+//
+//		int aBlockHeight = bz;
+//		int bBlockWidth = bz;
+//		int commBlockWidth = bz;
+//
+//		for (int ib = 0; ib < aHeightBlocks; ib++) {
+//			if (aLastBlockHeight > 0 && ib == (aHeightBlocks - 1)) {
+//				aBlockHeight = aLastBlockHeight;
+//			}
+//			bBlockWidth = bz;
+//			commBlockWidth = bz;
+//			for (int jb = 0; jb < bWidthBlocks; jb++) {
+//				if (bLastBlockWidth > 0 && jb == (bWidthBlocks - 1)) {
+//					bBlockWidth = bLastBlockWidth;
+//				}
+//				commBlockWidth = bz;
+//				for (int kb = 0; kb < commnBlocks; kb++) {
+//					if (commLastBlockWidth > 0 && kb == (commnBlocks - 1)) {
+//						commBlockWidth = commLastBlockWidth;
+//					}
+//
+//					for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
+//						for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
+//							for (int k = kb * bz; k < (kb * bz)
+//									+ commBlockWidth; k++) {
+//								if(k >= startCol && A[i][k]!= 0 && B[k][j]!= 0)
+//									C[i][j] += A[i][k] * B[k][j];
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//
+//		return C;
+//	}
 	
 	public static double[][] naiveMM(double[][] A, double[][] B,
 			int aHeight, int bWidth, int comm) {
@@ -432,24 +470,5 @@ public class MatrixUtils {
 			}
 		}
 		return res;
-	}
-	
-	public static void main(String[] args) {
-		short[][] A = //{{0, 1, 1, 1},
-				{{1, 0, 1, 1},
-				{1, 1, 0, 1},
-				{1, 1, 1, 0}};
-		double[] Adiag = {4, 4, 4};
-		double[][] B = {{1, 1},
-				{1, 1},
-				{1, 1},
-				{1, 1}};
-		double[][] C = matrixMultiply(A, Adiag, B, 3, 2, 4, 2, 1);
-		for (int i = 0; i < C.length; ++i) {
-			for (int j = 0; j < C[i].length; ++j) {
-				System.out.print(C[i][j] + " ");
-			}
-			System.out.println();
-		}
 	}
 }

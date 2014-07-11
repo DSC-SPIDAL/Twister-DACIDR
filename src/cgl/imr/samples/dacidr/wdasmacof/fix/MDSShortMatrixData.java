@@ -71,7 +71,6 @@ public class MDSShortMatrixData {
 		this.row = row;
 		this.rowOffset = rowOffset;
 	}
-	
 	short[][] data;
 	int height;
 	int width;

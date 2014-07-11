@@ -24,6 +24,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 	int N;
 	int bz;
 	double[] V;
+	int inSampleSize;
 	
 	@Override
 	public void close() throws TwisterException {
@@ -43,6 +44,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 		String fileName = (inputFolder + "/" + inputPrefix + mapConf.getMapTaskNo())
 				.replaceAll("//", "/");
 		String idsFile = jobConf.getProperty("IdsFile");
+		inSampleSize = Integer.parseInt(jobConf.getProperty("InSampleSize"));
 
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(idsFile));
@@ -73,7 +75,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 					if (i + deltaMatData.getRowOffset() != j)
 						V[i] += weight[i][j];
 				}
-				V[i] += 1;
+				//V[i] += 1;
 
 			}
 		} catch (IOException e) {
@@ -93,16 +95,25 @@ public class MatrixMultiplyMapTask implements MapTask{
 		StringValue memCacheKey = (StringValue) val;
 		MDSMatrixData mData = (MDSMatrixData) (MemCache.getInstance().get(
 				jobConf.getJobId(), memCacheKey.toString()));
+		boolean inSample = mData.isInSample();
 		double[][] X = mData.getData();
-
+		double[][] result = null;
 		// Next we can calculate the BofZ * preX.
-		X = MatrixUtils.matrixMultiply(weight, V, X, blockHeight,
-				X[0].length, N, bz, rowOffset);
+		//if (inSample) {
+			result = MatrixUtils.matrixMultiplyInSample(weight, V, X, blockHeight,
+					X[0].length, X.length, bz, rowOffset, inSampleSize, inSample);
+//		}
+//		else {
+//			System.out.println(X.length);
+//			
+//			result = MatrixUtils.matrixMultiplyInSample(weight, V, X, blockHeight,
+//					X[0].length, X.length, bz, rowOffset, inSampleSize, inSample);
+//		//}
 
 		// Send C with the map task number to a reduce task. Which will simply
 		// combine these parts and form the N x d matrix.
 		// We don't need offset here.
-		MDSMatrixData newMData = new MDSMatrixData(X, blockHeight, X[0].length,
+		MDSMatrixData newMData = new MDSMatrixData(result, blockHeight, result[0].length,
 				mData.getRow(), rowOffset);
 		collector.collect(new StringKey("MM-map-to-reduce-key"), newMData);
 	}

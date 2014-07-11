@@ -70,6 +70,7 @@ public class MDSMatrixData implements Value {
 	int width;
 	int row = -1; // Row (or row bloc) index
 	int rowOffset = -1; // row offset
+	boolean inSample = true;
 	
 	double curT = 0.0;
 	//boolean updated = false;
@@ -81,6 +82,14 @@ public class MDSMatrixData implements Value {
 		this.data = data;
 		this.height = height;
 		this.width = width;
+		this.inSample = inSample;
+	}
+	
+	public MDSMatrixData(double[][] data, int height, int width, boolean inSample) {
+		this.data = data;
+		this.height = height;
+		this.width = width;
+		this.inSample = inSample;
 	}
 
 	public MDSMatrixData(double[][] data, int height, int width, int row,
@@ -97,6 +106,7 @@ public class MDSMatrixData implements Value {
 		DataInputStream din = new DataInputStream(baInputStream);
 
 		try {
+			inSample = din.readBoolean();
 			height = din.readInt();
 			width = din.readInt();
 			row = din.readInt();
@@ -127,7 +137,7 @@ public class MDSMatrixData implements Value {
 		byte[] marshalledBytes = null;
 
 		try {
-
+			dout.writeBoolean(inSample);
 			dout.writeInt(height);
 			dout.writeInt(width);
 			dout.writeInt(row);
@@ -224,5 +234,9 @@ public class MDSMatrixData implements Value {
 
 	public void setCurT(double curT) {
 		this.curT = curT;
+	}
+
+	public boolean isInSample() {
+		return inSample;
 	}
 }

@@ -141,14 +141,14 @@ public class DAMDS2 {
 			System.out.println(" MaxOrigDistance: " + maxOrigDistance);
 
 			double[][] preX2 = generateInitMapping(N - inSampleSize, D);
-			
+
 			//make sure input matrix has inSample in front of other things
 			double[][] inSamplePoints = readPoints(inSampleFile, inSampleSize, D);
 			double[][] X1 = new double[N][3];
 			double[][] X2 = new double[N][3];
 			replaceInSamples(inSamplePoints, X1, 0);
 			replaceInSamples(preX2, X2, inSampleSize);
-			
+
 			TwisterModel stressDriver = configureCalculateStress(numMapTasks,
 					inputFolder, inputPrefix, weightPrefix, idsFile);
 			Double stress = null;
@@ -159,69 +159,111 @@ public class DAMDS2 {
 			double diffStress = 10 * threshold;  //starting value
 			int iter = 0;
 
-			//double X[][] = null;
-			double BC[][] = null;
-
 			// Configuring BC MapReduce driver.
 			TwisterModel bcDriver = 
 					configureCalculateBC(numMapTasks, inputFolder, 
 							inputPrefix, weightPrefix, idsFile, inSampleSize);
-			
-			TwisterModel mmDriver = 
-					configureMatrixMutiply(numMapTasks, inputFolder, weightPrefix, idsFile, inSampleSize);
 
+			TwisterModel mmDriver = 
+					configureMatrixMutiply(numMapTasks, inputFolder, 
+							weightPrefix, idsFile, inSampleSize);
+//			double[][] zeroes1 = new double[inSampleSize][D];
+//			double[][] zeroes2 = new double[N - inSampleSize][D];
+
+//			printMatrix(X1);
+//			System.out.println("========================================");
+//			printMatrix(X2);
+//			System.out.println("========================================");
+			double[][] V21X1 = calcMM(mmDriver, X1, true);
+			//replaceInSamples(zeroes1, V21X1, 0);
+			//printMatrix(V21X1, 0);
 			double QoR1 = 0;
 			double QoR2 = 0;
 
 			double avgOrigDist = avgOrigDistance;
 
-			
+
 			tMax = calculateMaxT(maxOrigDistance, D);
 			tMin = (0.01 * tMax < 0.01) ? 0.01 * tMax : 0.01;
 			tCur = alpha * tMax;
-			
+
 			double endTime = System.currentTimeMillis();
 			System.out.println("Upto the loop took =" + (endTime - beginTime)
 					/ 1000 + " Seconds.");
 
 			iter = 0;
-			
-			double[][] zeroes = new double[inSampleSize][D];
-			
+
+
 			while (true) {
-				replaceInSamples(zeroes, X2, 0);
+				//replaceInSamples(zeroes1, X2, 0);
 				double[][] Z = matrixAddition(X1, X2);
-				
+
 				preStress = calculateStress(stressDriver, Z, numMapTasks);
 				diffStress = threshold + 1.0;
-				
+
 				System.out.println("###############################");
 				System.out.printf("# T_Cur = %.10g\n", tCur);
 				System.out.println("###############################");
-				
+
 				while ( diffStress >= threshold ) {
-					replaceInSamples(zeroes, X2, 0);
+					//replaceInSamples(zeroes1, X2, 0);
+					
+//					printMatrix(Z);
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					
+					double[][] BC1 = calculateBC(bcDriver, Z, true);
+//					if (iter == 0)
+//					printMatrix(BC1, 0);
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					
+					double[][] BC2 = calculateBC(bcDriver, Z, false);					
+
+//					if (iter == 0)
+//					printMatrix(BC2, 0);
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+////
+//					replaceInSamples(zeroes1, BC1, 0);
+//					replaceInSamples(zeroes1, BC2, 0);
+					BC2 = matrixSubstraction(matrixAddition(BC2, BC1), V21X1);
+
+//					if (iter == 0)
+//					printMatrix(BC2, 0);
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					printMatrix(X2, 0);
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+
+					X2 = conjugateGradient(mmDriver, BC2, X2, inSampleSize);
+//					printMatrix(X2, 0);
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+//					System.out.println("======================================");
+					
 					Z = matrixAddition(X1, X2);
-					
-					BC = calculateBC(bcDriver, Z);
-					X2 = conjugateGradient(mmDriver, BC, X2);
-					
 					stress = calculateStress(stressDriver, Z, numMapTasks);
 					diffStress = preStress - stress;
 					preStress = stress;
-					//preX = MatrixUtils.copy(X);
 
 					iter++;
-					
+
 					if ((iter % 10 == 0) || (iter >= MAX_ITER)) {
 						System.out.println("Iteration ## " + iter + " completed. " + threshold + " " + diffStress + " " + stress);
 					}
 					++SMACOF_REAL_ITER;
 				}
-				
+
 				System.out.println("Iteration ## " + iter + " completed. " + threshold + " " + diffStress + " " + stress);
 				System.out.println();
-				
+
 				if (tCur == 0)
 					break;
 				tCur *= alpha;
@@ -229,7 +271,7 @@ public class DAMDS2 {
 					tCur = 0;
 				iter = 0;
 			}
-			
+
 			QoR1 = stress / (N * (N - 1) / 2);
 			QoR2 = QoR1 / (avgOrigDist * avgOrigDist);
 
@@ -237,17 +279,17 @@ public class DAMDS2 {
 			System.out.println("Average of Delta(original distance) = "	+ avgOrigDist);
 
 			endTime = System.currentTimeMillis();
-			replaceInSamples(zeroes, X2, 0);
+			//replaceInSamples(zeroes1, X2, 0);
 			double[][] X = matrixAddition(X1, X2);
 			if (labelsFile.endsWith("NoLabel")) {
-				writeOuput(X, outputFile);
+				writeOuput(X, outputFile, inSampleSize);
 			} else {
 				writeOuput(X, labelsFile, outputFile);
 			}
 			bcDriver.close();			
 			mmDriver.close();
 			stressDriver.close();
-			
+
 			
 			TwisterModel finalStressDriver = configureCalculateStress(numMapTasks,
 					inputFolder, inputPrefix, finalWeightPrefix, idsFile);
@@ -268,6 +310,27 @@ public class DAMDS2 {
 			System.exit(-1);
 		}
 		System.exit(0);
+	}
+	
+	public static void printMatrix(double[][] X, int start) {
+		for (int i = start; i < X.length; ++i) {
+			for (int j = 0; j < X[0].length; ++j) {
+				System.out.print(X[i][j] + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	public static double[][] matrixSubstraction(double[][] first, double[][] second) {
+		if (first.length != second.length || first[0].length != second[0].length)
+			System.out.println("error!");
+		double[][] result = new double[first.length][first[0].length];
+		for (int i = 0; i < first.length; ++i) {
+			for (int j = 0; j < first[i].length; ++j) {
+				result[i][j] = first[i][j] - second[i][j];
+			}
+		}
+		return result;
 	}
 	
 	public static double[][] matrixAddition(double[][] first, double[][] second) {
@@ -311,13 +374,13 @@ public class DAMDS2 {
 	}
 	
 	private static double[][] conjugateGradient(TwisterModel mmDriver, 
-			double[][] BC, double[][] preX) throws TwisterException{
+			double[][] BC, double[][] preX, int inSampleSize) throws TwisterException{
 		double[][] X = null;
 		double[][] r = new double[N][D];
 		double[][] p = new double[N][D];
 		
 		X = preX;
-		r = calcMM(mmDriver, X);
+		r = calcMM(mmDriver, X, false);
 
 		for(int i = 0; i < N; ++i)
 			for(int j = 0; j < D; ++j){
@@ -328,16 +391,34 @@ public class DAMDS2 {
 		int cgCount = 0;
 		double rTr = innerProductCalculation(r);
 
-		//System.out.println("1");
+//		printMatrix(r, 0);
+//		System.out.println("======================================");
+//		System.out.println("======================================");
+//		System.out.println("======================================");
+
+//		System.out.println("rTr: " + rTr);
+		//double[][] zeroes = new double[inSampleSize][D];
 		while(cgCount < CG_ITER){
 			cgCount++;
 			++CG_REAL_ITER;
 			//System.out.println("2");
 			//calculate alpha
-			double[][] Ap = calcMM(mmDriver, p);
+			double[][] Ap = calcMM(mmDriver, p, false);
+
+
+//			printMatrix(Ap, 0);
+//			System.out.println("======================================");
+//			System.out.println("======================================");
+//			System.out.println("======================================");
 			
+			//replaceInSamples(zeroes, Ap, 0);
 			double alpha = rTr
 					/innerProductCalculation(p, Ap);
+			
+//			printMatrix(Ap, 0);
+//			System.out.println("======================================");
+//			System.out.println("======================================");
+//			System.out.println("======================================");
 
 			//update Xi to Xi+1
 			for(int i = 0; i < N; ++i)
@@ -356,19 +437,21 @@ public class DAMDS2 {
 			//calculate beta
 			double rTr1 = innerProductCalculation(r);
 			double beta = rTr1/rTr;
+
+//			System.out.println("error: " + rTr);
+//			System.out.println("alpha: " + alpha);
+//			System.out.println("beta: " + beta);
+
 			rTr = rTr1;
-			
 			//update pi to pi+1
 			for(int i = 0; i < N; ++i)
 				for(int j = 0; j < D; ++j)
 					p[i][j] = r[i][j] + beta * p[i][j];
-
-			
 		}
 		return X;
 	}
 	
-	private static void writeOuput(double[][] x, String outputFile)
+	private static void writeOuput(double[][] x, String outputFile, int inSampleSize)
 			throws IOException {
 		PrintWriter writer = new PrintWriter(new FileWriter(outputFile));
 		int N = x.length;
@@ -382,7 +465,10 @@ public class DAMDS2 {
 				// configuration
 				// of each axis.
 			}
-			writer.println("1"); // print label value, which is ONE for all
+			if (i < inSampleSize)
+				writer.println("1"); // print label value, which is ONE for all
+			else
+				writer.println("2");
 			// data.
 		}
 		writer.flush();
@@ -430,11 +516,11 @@ public class DAMDS2 {
 		writer.close();
 	}
 
-	private static double[][] calculateBC(TwisterModel bcDriver, double[][] preX)
+	private static double[][] calculateBC(TwisterModel bcDriver, double[][] preX, boolean inSample)
 			throws TwisterException {
 
 		MDSMatrixData BCMatData = null;
-		MDSMatrixData preXMatData = new MDSMatrixData(preX, N, preX[0].length);
+		MDSMatrixData preXMatData = new MDSMatrixData(preX, N, preX[0].length, inSample);
 		preXMatData.setCurT(tCur);
 		
 		String memCacheKey = bcDriver.addToMemCache(preXMatData);
@@ -492,11 +578,11 @@ public class DAMDS2 {
 
 	}
 
-	private static double[][] calcMM(TwisterModel xDriver, double[][] X)
+	private static double[][] calcMM(TwisterModel xDriver, double[][] X, boolean inSample)
 			throws TwisterException {
 
 		MDSMatrixData rMatData = null;
-		MDSMatrixData XMatData = new MDSMatrixData(X, X.length, X[0].length);
+		MDSMatrixData XMatData = new MDSMatrixData(X, X.length, X[0].length, inSample);
 		String memCacheKey = xDriver.addToMemCache(XMatData);
 		TwisterMonitor monitor = xDriver.runMapReduceBCast(new StringValue(
 				memCacheKey));
@@ -659,6 +745,7 @@ public class DAMDS2 {
 		for (int i = 0; i < numDataPoints; i++) {
 			for (int j = 0; j < targetDim; j++) {
 				if(rand.nextBoolean())
+					//matX[i][j] = i * 0.000001;
 					matX[i][j] = rand.nextDouble();
 				else
 					matX[i][j] = -rand.nextDouble();

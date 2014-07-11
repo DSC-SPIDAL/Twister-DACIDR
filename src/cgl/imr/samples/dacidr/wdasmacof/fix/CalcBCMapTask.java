@@ -45,6 +45,8 @@ public class CalcBCMapTask implements MapTask {
 
 	float[][] BofZ = null;
 	private JobConf jobConf;
+	
+	int inSampleSize;
 
 	public void map(MapOutputCollector collector, Key key, Value val)
 			throws TwisterException {
@@ -55,7 +57,7 @@ public class CalcBCMapTask implements MapTask {
 
 		double[][] preX = mData.getData();
 		double tmpCurT = mData.getCurT();
-		
+		boolean inSample = mData.isInSample();
 		if (tmpCurT != tCur) {
 			tCur = tmpCurT;
 		}
@@ -64,11 +66,33 @@ public class CalcBCMapTask implements MapTask {
 		// Each map task calculates the m th block of the matrix, where m is the
 		// map task number.
 		calculateBofZ(preX);
+		double[][] C = null;
 
 		// Next we can calculate the BofZ * preX.
-		double[][] C = MatrixUtils.matrixMultiply(BofZ, preX, blockHeight,
-				preX[0].length, N, bz);
-
+		//System.out.println(inSampleSize);
+//		if (inSample) {
+//			double[][] X1 = new double[inSampleSize][preX[0].length];
+//			for (int i = 0; i < inSampleSize; ++i) {
+//				for (int j = 0; j < preX[0].length; ++j) {
+//					X1[i][j] = preX[i][j];
+//				}
+//			}
+			
+			C = MatrixUtils.matrixMultiplyInSample(BofZ, preX, blockHeight,
+				preX[0].length, preX.length, bz, blockOffset, inSampleSize, inSample);
+//		}
+//		else {
+////			double[][] X2 = new double[N - inSampleSize][preX[0].length];
+////			for (int i = inSampleSize; i < N; ++i) {
+////				for (int j = 0; j < preX[0].length; ++j) {
+////					X2[i - inSampleSize][j] = preX[i][j];
+////				}
+////			}
+//			C = MatrixUtils.matrixMultiplyOutSample(BofZ, preX, blockHeight,
+//					preX[0].length, preX.length, bz, inSampleSize, inSample);
+//		}
+		
+		//printMatrix(C, 0, blockOffset);
 		// Send C with the map task number to a reduce task. Which will simply
 		// combine
 		// these parts and form the N x d matrix.
@@ -77,7 +101,14 @@ public class CalcBCMapTask implements MapTask {
 		collector.collect(new StringKey("BC-calc-to-reduce-key"), newMData);
 
 	}
-
+	public static void printMatrix(double[][] X, int start, int offset) {
+		for (int i = start; i < X.length; ++i) {
+			for (int j = 0; j < X[0].length; ++j) {
+				System.out.print(offset + ":" + X[i][j] + " ");
+			}
+			System.out.println();
+		}
+	}
 	/**
 	 * Calculation of partial BofZ matrix block.
 	 * 
@@ -172,6 +203,8 @@ public class CalcBCMapTask implements MapTask {
 				.replaceAll("//", "/");
 		
 		String idsFile = jobConf.getProperty("IdsFile");
+		
+		inSampleSize = Integer.parseInt(jobConf.getProperty("InSampleSize"));
 
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(idsFile));

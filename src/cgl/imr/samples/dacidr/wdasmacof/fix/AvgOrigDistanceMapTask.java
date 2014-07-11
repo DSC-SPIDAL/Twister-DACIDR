@@ -78,13 +78,15 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		double maxDelta = 0.0;
 
 		for (int i = 0; i < height; i++) {
+			int realRowIndex = i + rowData.getRowOffset();
 			for (int j = 0; j < width; j++) {
-				if(weights[i][j] != 0 && i + rowData.getRowOffset() < inSampleSize){
+				if(weights[i][j] != 0){
 					double realD = data[i][j] / (double) Short.MAX_VALUE;
 					average += realD;
 					avgSquare += (realD * realD);
 					
-					if (maxDelta < realD)
+					if (maxDelta < realD && realRowIndex >= inSampleSize
+							|| j >= inSampleSize)
 						maxDelta = realD;
 				}
 			}

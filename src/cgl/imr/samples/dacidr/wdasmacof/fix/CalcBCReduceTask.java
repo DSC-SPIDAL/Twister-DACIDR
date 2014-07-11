@@ -59,7 +59,7 @@ public class CalcBCReduceTask implements ReduceTask {
 		}
 
 		MDSMatrixData rowX = new MDSMatrixData(results, N, width);
-		collector.collect(new StringKey("calc-x-reduce-combiner-key"), rowX);
+		collector.collect(new StringKey("calc-bc-reduce-combiner-key"), rowX);
 
 	}
 
