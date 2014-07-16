@@ -1,10 +1,34 @@
 How to run DACIDR using Twister-0.9
 ======
 1) Gain access to Linux environment machine
+
 2) Set up Twister-0.9 environment following the steps from: http://www.iterativemapreduce.org/
-3) Export the classes under dacidr into a jar file, and put it under $TWISTER_HOME/apps
+
+3) Export the classes under dacidr into a jar file (use ANT), and put it under $TWISTER_HOME/apps
+
 4) Copy all the files under lib folder except the Twister-0.9.jar and put it under $TWISTER_HOME/lib
+
 5) run the application
+
+See the documentations on:
+http://salsahpc.indiana.edu/millionseq/
+
+References
+====
+Yang Ruan, Geoffrey House, Saliya Ekanayake, Ursel Schütte, James D. Bever, Haixu Tang, Geoffrey Fox. Integration of Clustering and Multidimensional Scaling to Determine Phylogenetic Trees as Spherical Phylograms Visualized in 3 Dimensions. Proceedings of C4Bio 2014 of IEEE/ACM CCGrid 2014, Chicago, USA, May 26-29, 2014.
+
+Yang Ruan, Geoffrey Fox. A Robust and Scalable Solution for Interpolative Multidimensional Scaling with Weighting. Proceedings of IEEE eScience 2013, Beijing, China, Oct. 22-Oct. 25, 2013. (Best Student Innovation Award)
+
+Yang Ruan, Saliya Ekanayake, Mina Rho, Haixu Tang, Seung-Hee Bae, Judy Qiu, Geoffrey Fox. DACIDR: Deterministic Annealed Clustering with Interpolative Dimension Reduction using a Large Collection of 16S rRNA Sequences. Proceedings of ACM-BCB 2012, Orlando, Florida, ACM, Oct. 7-Oct. 10, 2012.
+
+Yang Ruan, Zhenhua Guo, Yuduo Zhou, Judy Qiu, Geoffrey Fox. HyMR: a Hybrid MapReduce Workflow System. Proceedings of ECMLS’12 of ACM HPDC 2012, Delft, Netherlands, ACM, Jun. 18-Jun. 22, 2012
+
+Adam Hughes, Yang Ruan, Saliya Ekanayake, Seung-Hee Bae, Qunfeng Dong, Mina Rho, Judy Qiu, Geoffrey Fox. Interpolative Multidimensional Scaling Techniques for the Identification of Clusters in Very Large Sequence Sets, BMC Bioinformatics 2012, 13(Suppl 2):S9.
+
+Stanberry, Larissa, Roger Higdon, Winston Haynes, Natali Kolker, William Broomall, Saliya Ekanayake, Adam Hughes et al. "Visualizing the protein sequence universe." Concurrency and Computation: Practice and Experience 26, no. 6 (2014): 1313-1325.
+
+Chris Hemmerich, Adam Hughes, Yang Ruan, Aaron Buechlein, Judy Qiu, Geoffrey Fox. Map-Reduce Expansion of the ISGA Genomic Analysis Web Server. CloudCom 2010. Indianapolis, IN.
+
 
 The applications in DACIDR
 ======
