@@ -1,0 +1,30 @@
+<project name="Twister-DACIDR" basedir="." default="compile">
+<!-- Author: Yang Ruan -->
+
+	<property name="build.dir" value="build" />
+	<property name="lib.dir" value="lib" />
+		
+	<path id="class.path">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="compile">
+		<mkdir dir="${build.dir}/classes" />
+		<javac memoryMaximumSize="256m" memoryInitialSize="256m" fork="true" destdir="${build.dir}/classes" debug="true">
+			<src path="src" />
+			<classpath refid="class.path" />
+		</javac>
+		
+		<mkdir dir="${build.dir}/classes/lib"/>
+		
+		<jar destfile="${build.dir}/twister-dacidr.jar">
+			<fileset dir="${build.dir}/classes" />
+		</jar>
+	</target>
+	
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+</project>	
