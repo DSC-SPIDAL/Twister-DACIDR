@@ -66,8 +66,9 @@ The Twister Pipeline is used to process genomic sequence information on a comput
 
 ## RUNNING Smith-Waterman (Pairwise Sequence Alignment)
 
+#####Script Names:
 * pwaFileSpliter.sh function splits sequence file into smaller partitions
-* (easier to process) - pwaMul.sh function performs distance matrix calculations - resulting files are in directory specified when prior functions are run.
+* pwaMul.sh function performs distance matrix calculations - resulting files are in directory specified when prior functions are run.
 
 ```
 [lsaggu@i97 dacidr]$ ./pwaFileSpliter.sh args: [gene_seq_file] [sequence_count] 
@@ -104,7 +105,12 @@ args: [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] [num_of_partitio
 10. sequence type = RNA or DNA (DNA has reverse scores)
 
 ##RUNNING MDS
-#####RUN RANDOM WEIGHTS - Generate a random weights output folder. 
+#####Script Names:
+* randomeWeights.sh - Generate a random weights output folder.
+* mdsFileSplitter.sh - Split the matrix file
+* run_dasmacof_cg_mem.sh - run MDS algorithm
+
+#####RUN RANDOM WEIGHTS (randomeWeights.sh)
 In Twister_HOME directory, go to samples/dacidr - Weights indicate significance of certain data points
 ```
 randomWeights.sh [1. output weighted matrix] [2. row] [3. col]
@@ -117,7 +123,7 @@ randomWeights.sh [1. output weighted matrix] [2. row] [3. col]
 5. 0
 6. 1
 
-#####SPLIT WEIGHTS - In TWISTER_HOME/samples/dacidr - This splits the weight matrix file
+#####SPLIT WEIGHTS (mdsFileSplitter.sh)
 
 ```
 mdsFileSplit.sh [1. Data File ] [2. Temporary directory to split data ]
@@ -131,6 +137,8 @@ mdsFileSplit.sh [1. Data File ] [2. Temporary directory to split data ]
 6. number of sequences
 7. number of sequences
 8. weight and distance matrices are in short (0)
+
+#####RUN MDS (run_dasmacof_cg_mem.sh)
 
 ```
 run_dasmacof_cg_mem.sh [1. Num map tasks ] [2. Input Folder]
