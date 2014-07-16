@@ -18,7 +18,7 @@ import cgl.imr.worker.MemCache;
 
 /**
  * 
- * @author Jaliya Ekanayake, jekanaya@cs.indiana.edu Some code segments contain
+ * @author Yang Ruan, yangruan@cs.indiana.edu Some code segments contain
  *         in this class are directly inherited from the C# version of the
  *         shared memory MDS program wirtten by my collegue Seung-Hee Bae.
  * 

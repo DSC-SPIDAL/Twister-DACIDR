@@ -16,9 +16,9 @@ import cgl.imr.worker.MemCache;
 
 /**
  * 
- * @author Jaliya Ekanayake, jekanaya@cs.indiana.edu Some code segments contain
+ * @author Yang Ruan, yangruan@cs.indiana.edu Some code segments contain
  *         in this class are directly inherited from the C# version of the
- *         shared memory MDS program wirtten by my collegue Seung-Hee Bae.
+ *         shared memory MDS program wirtten by my collegue Seung-Hee Bae and Jaliya
  * 
  *         This class performs the partial calculation of the following matrrix
  *         multiplication. BC= BofZ * preX. Please see ParallelMDSMapReduce.java

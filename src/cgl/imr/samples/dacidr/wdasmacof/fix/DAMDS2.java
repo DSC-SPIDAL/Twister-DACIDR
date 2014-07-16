@@ -1,7 +1,7 @@
 package cgl.imr.samples.dacidr.wdasmacof.fix;
 
 /**
- * @author Seung-Hee Bae: sebae@cs.indiana.edu
+ * @author Yang Ruan, yangruan@cs.indiana.edu
  *		Twister-DAMDS is implemented based on Twister-MDS.
  */
 

@@ -145,16 +145,16 @@ public class PWAMapTask implements MapTask {
 			// calculate distance, sequence by sequence
 			//short[][] distances = new short[rowSize][columnSize];
 			
-			short[][] score = new short[rowSize][columnSize];
+//			short[][] score = new short[rowSize][columnSize];
 			short[][] length = new short[rowSize][columnSize];
 			short[][] identicalPairs = new short[rowSize][columnSize];
-			short[][] scoreReverse = new short[rowSize][columnSize];
+//			short[][] scoreReverse = new short[rowSize][columnSize];
 			short[][] lengthReverse = new short[rowSize][columnSize];
 			short[][] identicalPairsReverse = new short[rowSize][columnSize];
-			short[][] scoreA = new short[rowSize][columnSize];
-			short[][] scoreB = new short[rowSize][columnSize];
-			short[][] scoreAReverse = new short[rowSize][columnSize];
-			short[][] scoreBReverse = new short[rowSize][columnSize];
+//			short[][] scoreA = new short[rowSize][columnSize];
+//			short[][] scoreB = new short[rowSize][columnSize];
+//			short[][] scoreAReverse = new short[rowSize][columnSize];
+//			short[][] scoreBReverse = new short[rowSize][columnSize];
 			
 			// calculate the alignment length size
 			if(type.equals("NW")){
@@ -178,22 +178,22 @@ public class PWAMapTask implements MapTask {
 							calculateAlignment(new ProteinSequence(rowBlockSequences[j].toString()), 
 									new ProteinSequence(colBlockSequences[k].toString()), 
 									gapOpen, gapExt, nwScoringMatrix, DistanceType.PercentIdentity);
-							score[j][k] = (short)ad.getScore();
+//							score[j][k] = (short)ad.getScore();
 							length[j][k] = (short)ad.getAlignmentLengthExcludingEndGaps();
 							identicalPairs[j][k] = (short)ad.getNumIdenticals();
 
-							int startA = ad.getFirstAlignedSequenceStartOffset();
-							int endA = ad.getFirstAlignedSequenceEndOffset();
-							int startB = ad.getSecondAlignedSequenceStartOffset();
-							int endB = ad.getSecondAlignedSequenceEndOffset();
+//							int startA = ad.getFirstAlignedSequenceStartOffset();
+//							int endA = ad.getFirstAlignedSequenceEndOffset();
+//							int startB = ad.getSecondAlignedSequenceStartOffset();
+//							int endB = ad.getSecondAlignedSequenceEndOffset();
 
-							ProteinSequence partialA 
-							= new ProteinSequence(rowBlockSequences[j].toString().substring(startA, endA + 1));
-							ProteinSequence partialB 
-							= new ProteinSequence(colBlockSequences[k].toString().substring(startB, endB + 1));
+//							ProteinSequence partialA 
+//							= new ProteinSequence(rowBlockSequences[j].toString().substring(startA, endA + 1));
+//							ProteinSequence partialB 
+//							= new ProteinSequence(colBlockSequences[k].toString().substring(startB, endB + 1));
 
-							scoreA[j][k] = (short)AlignmentData.getSelfAlignedScore(partialA, nwScoringMatrix);
-							scoreB[j][k] = (short)AlignmentData.getSelfAlignedScore(partialB, nwScoringMatrix);
+//							scoreA[j][k] = (short)AlignmentData.getSelfAlignedScore(partialA, nwScoringMatrix);
+//							scoreB[j][k] = (short)AlignmentData.getSelfAlignedScore(partialB, nwScoringMatrix);
 						}
 					}
 				} else {
@@ -205,7 +205,7 @@ public class PWAMapTask implements MapTask {
 							calculateAlignment(new ProteinSequence(rowBlockSequences[j].toString()), 
 									new ProteinSequence(colBlockSequences[k].toString()), 
 									gapOpen, gapExt, nwScoringMatrix, DistanceType.PercentIdentity);
-							score[j][k] = (short)ad.getScore();
+//							score[j][k] = (short)ad.getScore();
 							length[j][k] = (short)ad.getAlignmentLengthExcludingEndGaps();
 							identicalPairs[j][k] = (short)ad.getNumIdenticals();
 
@@ -219,20 +219,20 @@ public class PWAMapTask implements MapTask {
 							ProteinSequence partialB 
 							= new ProteinSequence(colBlockSequences[k].toString().substring(startB, endB + 1));
 
-							scoreA[j][k] = (short)AlignmentData.getSelfAlignedScore(partialA, nwScoringMatrix);
-							scoreB[j][k] = (short)AlignmentData.getSelfAlignedScore(partialB, nwScoringMatrix);
-							score[k][j] = score[j][k];
-							scoreA[k][j] = scoreA[j][k];
-							scoreB[k][j] = scoreB[j][k];
+//							scoreA[j][k] = (short)AlignmentData.getSelfAlignedScore(partialA, nwScoringMatrix);
+//							scoreB[j][k] = (short)AlignmentData.getSelfAlignedScore(partialB, nwScoringMatrix);
+//							score[k][j] = score[j][k];
+//							scoreA[k][j] = scoreA[j][k];
+//							scoreB[k][j] = scoreB[j][k];
 						}
 						// Pairwise distance for diagonal elements
 						AlignmentData ad = BioJavaWrapper.
 								calculateAlignment(new ProteinSequence(rowBlockSequences[j].toString()), 
 										new ProteinSequence(rowBlockSequences[j].toString()), 
 										gapOpen, gapExt, nwScoringMatrix, DistanceType.PercentIdentity);
-						score[j][j] = (short) ad.getScore();
-						scoreA[j][j] = (short) ad.getScore();
-						scoreB[j][j] = (short) ad.getScore();
+//						score[j][j] = (short) ad.getScore();
+//						scoreA[j][j] = (short) ad.getScore();
+//						scoreB[j][j] = (short) ad.getScore();
 						length[j][j] = (short) ad.getAlignmentLengthExcludingEndGaps();
 						identicalPairs[j][j] = (short) ad.getNumIdenticals();
 					}
@@ -272,7 +272,7 @@ public class PWAMapTask implements MapTask {
 									System.out.println("SequenceA: " + sequenceA.toString() + 
 											"####SequenceB:" + sequenceB.toString());
 								}
-								score[j][k] = ad.getScore();
+//								score[j][k] = ad.getScore();
 								length[j][k] = ad.getAlignmentLength();
 								identicalPairs[j][k] = ad.getNumberOfIdenticalBasePairs(false);
 								int startA = ad.getFirstAlignedSequenceStartOffset();
@@ -281,10 +281,10 @@ public class PWAMapTask implements MapTask {
 								int endB = ad.getSecondAlignedSeqeunceEndOffset();
 								
 								
-								Sequence partialA =	getPartialSequence(startA, endA, sequenceA);
-								scoreA[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
-								Sequence partialB =	getPartialSequence(startB, endB, sequenceB); 
-								scoreB[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
+//								Sequence partialA =	getPartialSequence(startA, endA, sequenceA);
+//								scoreA[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
+//								Sequence partialB =	getPartialSequence(startB, endB, sequenceB); 
+//								scoreB[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
 								
 								if(seqType.equals("DNA")){
 									try{
@@ -303,19 +303,19 @@ public class PWAMapTask implements MapTask {
 										}
 									}
 									ad = ads.get(0);
-									scoreReverse[j][k] = ad.getScore();
+//									scoreReverse[j][k] = ad.getScore();
 									lengthReverse[j][k] = ad.getAlignmentLength();
 									identicalPairsReverse[j][k] = ad.getNumberOfIdenticalBasePairs(false);
 									
-									startA = ad.getFirstAlignedSequenceStartOffset();
-									endA = ad.getFirstAlignedSequenceEndOffset();
-									startB = ad.getSecondAlignedSeqeunceStartOffset();
-									endB = ad.getSecondAlignedSeqeunceEndOffset();
-									
-									Sequence partialAReverse =	getPartialSequence(startA, endA, sequenceA);
-									scoreAReverse[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
-									Sequence partialBReverse =getPartialSequence(startB, endB, sequenceB.getReverseComplementedSequence()); 
-									scoreBReverse[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
+//									startA = ad.getFirstAlignedSequenceStartOffset();
+//									endA = ad.getFirstAlignedSequenceEndOffset();
+//									startB = ad.getSecondAlignedSeqeunceStartOffset();
+//									endB = ad.getSecondAlignedSeqeunceEndOffset();
+//									
+//									Sequence partialAReverse =	getPartialSequence(startA, endA, sequenceA);
+//									scoreAReverse[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
+//									Sequence partialBReverse =getPartialSequence(startB, endB, sequenceB.getReverseComplementedSequence()); 
+//									scoreBReverse[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
 								}					
 							}
 						}
@@ -333,8 +333,8 @@ public class PWAMapTask implements MapTask {
 												gapOpen, gapExt, swgScoringMatrix);
 								// We will just take the first alignment
 								AlignedData ad = ads.get(0);
-								score[j][k] = ad.getScore();
-								score[k][j] = score[j][k];					          
+//								score[j][k] = ad.getScore();
+//								score[k][j] = score[j][k];					          
 								length[j][k] = ad.getAlignmentLength();
 								length[k][j] = length[j][k];
 								identicalPairs[j][k] = ad.getNumberOfIdenticalBasePairs(false);
@@ -354,12 +354,12 @@ public class PWAMapTask implements MapTask {
 //								System.out.println("startB: " + startB);
 //
 //								System.out.println("endB: " + endB);
-								Sequence partialA =	getPartialSequence(startA, endA, sequenceA);
-								scoreA[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
-								Sequence partialB =	getPartialSequence(startB, endB, sequenceB); 
-								scoreB[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
-								scoreA[k][j] = scoreA[j][k];
-								scoreB[k][j] = scoreB[j][k];
+//								Sequence partialA =	getPartialSequence(startA, endA, sequenceA);
+//								scoreA[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
+//								Sequence partialB =	getPartialSequence(startB, endB, sequenceB); 
+//								scoreB[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
+//								scoreA[k][j] = scoreA[j][k];
+//								scoreB[k][j] = scoreB[j][k];
 								
 								if(seqType.equals("DNA")){
 									ads = SequenceAlignment.
@@ -367,25 +367,25 @@ public class PWAMapTask implements MapTask {
 													sequenceB.getReverseComplementedSequence(), 
 													gapOpen, gapExt, swgScoringMatrix);
 									ad = ads.get(0);
-									scoreReverse[j][k] = ad.getScore();
-									scoreReverse[k][j] = scoreReverse[j][k];
+//									scoreReverse[j][k] = ad.getScore();
+//									scoreReverse[k][j] = scoreReverse[j][k];
          
 									lengthReverse[j][k] = ad.getAlignmentLength();
 									lengthReverse[k][j] = lengthReverse[j][k];
 									identicalPairsReverse[j][k] = ad.getNumberOfIdenticalBasePairs(false);
 									identicalPairsReverse[k][j] = identicalPairsReverse[j][k];
 									
-									startA = ad.getFirstAlignedSequenceStartOffset();
-									endA = ad.getFirstAlignedSequenceEndOffset();
-									startB = ad.getSecondAlignedSeqeunceStartOffset();
-									endB = ad.getSecondAlignedSeqeunceEndOffset();
-									
-									Sequence partialAReverse =	getPartialSequence(startA, endA, sequenceA);
-									scoreAReverse[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
-									Sequence partialBReverse =	getPartialSequence(startB, endB, sequenceB.getReverseComplementedSequence()); 
-									scoreBReverse[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
-									scoreAReverse[k][j] = scoreAReverse[j][k];
-									scoreBReverse[k][j] = scoreBReverse[j][k];
+//									startA = ad.getFirstAlignedSequenceStartOffset();
+//									endA = ad.getFirstAlignedSequenceEndOffset();
+//									startB = ad.getSecondAlignedSeqeunceStartOffset();
+//									endB = ad.getSecondAlignedSeqeunceEndOffset();
+//									
+//									Sequence partialAReverse =	getPartialSequence(startA, endA, sequenceA);
+//									scoreAReverse[j][k] = (short) partialA.getSelfAlignedScore(swgScoringMatrix);
+//									Sequence partialBReverse =	getPartialSequence(startB, endB, sequenceB.getReverseComplementedSequence()); 
+//									scoreBReverse[j][k] = (short) partialB.getSelfAlignedScore(swgScoringMatrix);
+//									scoreAReverse[k][j] = scoreAReverse[j][k];
+//									scoreBReverse[k][j] = scoreBReverse[j][k];
 								}
 							}
 							// Pairwise distance for diagonal elements
@@ -394,21 +394,21 @@ public class PWAMapTask implements MapTask {
 											rowBlockSequences[j], 
 											gapOpen, gapExt, swgScoringMatrix);
 							AlignedData ad = ads.get(0);
-							score[j][j] = ad.getScore();
+//							score[j][j] = ad.getScore();
 							length[j][j] = ad.getAlignmentLength();
 							identicalPairs[j][j] = ad.getNumberOfIdenticalBasePairs(false);
-							scoreA[j][j] = ad.getScore();
-							scoreB[j][j] = ad.getScore();
+//							scoreA[j][j] = ad.getScore();
+//							scoreB[j][j] = ad.getScore();
 							if(seqType.equals("DNA")){
 								ads = SequenceAlignment.
 										getSWGAlignedData(rowBlockSequences[j], 
 												rowBlockSequences[j].getReverseComplementedSequence(), 
 												gapOpen, gapExt, swgScoringMatrix);ad = ads.get(0);
-								scoreReverse[j][j] = ad.getScore();
+//								scoreReverse[j][j] = ad.getScore();
 								lengthReverse[j][j] = ad.getAlignmentLength();
 								identicalPairsReverse[j][j] = ad.getNumberOfIdenticalBasePairs(false);
-								scoreAReverse[j][j] = ad.getScore();
-								scoreBReverse[j][j] = ad.getScore();
+//								scoreAReverse[j][j] = ad.getScore();
+//								scoreBReverse[j][j] = ad.getScore();
 							}
 						}
 					}
@@ -421,16 +421,16 @@ public class PWAMapTask implements MapTask {
 					e.printStackTrace();
 				}
 			}
-			block.setScore(score, false);
-			block.setLength(length);
+//			block.setScore(score, false);
+			block.setLength(length, false);
 			block.setIdenticalPairs(identicalPairs);
-			block.setScoreReverse(scoreReverse);
+//			block.setScoreReverse(scoreReverse);
 			block.setLengthReverse(lengthReverse);
 			block.setIdenticalPairsReverse(identicalPairsReverse);
-			block.setScoreA(scoreA);
-			block.setScoreAReverse(scoreAReverse);
-			block.setScoreB(scoreB);
-			block.setScoreBReverse(scoreBReverse);
+//			block.setScoreA(scoreA);
+//			block.setScoreAReverse(scoreAReverse);
+//			block.setScoreB(scoreB);
+//			block.setScoreBReverse(scoreBReverse);
 
 			try {
 				collector.collect(new StringKey("" + block.getRowBlockNumber()),
@@ -442,16 +442,16 @@ public class PWAMapTask implements MapTask {
 			if (rowBlockNumber != columnBlockNumber) {
 				// Creates a transpose block. Note. distances array should be treated as transpose when reading.
 				Block transBlock = new Block(block.getColumnBlockNumber(), block.getRowBlockNumber());
-				transBlock.setScore(block.getScore(), true);
-				transBlock.setLength(block.getLength());
+//				transBlock.setScore(block.getScore(), true);
+				transBlock.setLength(block.getLength(), true);
 				transBlock.setIdenticalPairs(block.getIdenticalPairs());
-				transBlock.setScoreReverse(block.getScoreReverse());
+//				transBlock.setScoreReverse(block.getScoreReverse());
 				transBlock.setLengthReverse(block.getLengthReverse());
 				transBlock.setIdenticalPairsReverse(block.getIdenticalPairsReverse());
-				transBlock.setScoreA(block.getScoreA());
-				transBlock.setScoreAReverse(block.getScoreAReverse());
-				transBlock.setScoreB(block.getScoreB());
-				transBlock.setScoreBReverse(block.getScoreBReverse());
+//				transBlock.setScoreA(block.getScoreA());
+//				transBlock.setScoreAReverse(block.getScoreAReverse());
+//				transBlock.setScoreB(block.getScoreB());
+//				transBlock.setScoreBReverse(block.getScoreBReverse());
 				try {
 					collector.collect(new StringKey("" + transBlock.getRowBlockNumber()),
 							new BytesValue(transBlock.getBytes()));

@@ -1,7 +1,7 @@
 package cgl.imr.samples.dacidr.wdasmacof.fix;
 
 /**
- * @author Jaliya Ekanayake, jekanaya@cs.indiana.edu
+ * @author Yang Ruan, yangruan@cs.indiana.edu
  * 
  *         Exception for matrix operations.
  * 

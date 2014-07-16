@@ -12,7 +12,7 @@ import cgl.imr.base.impl.ReducerConf;
 import cgl.imr.types.StringKey;
 
 /**
- * @author Jaliya Ekanayake, jekanaya@cs.indiana.edu
+ * @author Yang Ruan, yangruan@cs.indiana.edu
  * 
  *         This class simply combine the matrix blocks produce by the
  *         CalcBCMapTasks

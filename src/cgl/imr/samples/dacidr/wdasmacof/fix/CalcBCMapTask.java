@@ -16,13 +16,13 @@ import cgl.imr.worker.MemCache;
 
 /**
  * 
- * @author Jaliya Ekanayake, jekanaya@cs.indiana.edu Some code segments contain
+ * @author Yang Ruan, yangruan@cs.indiana.edu Some code segments contain
  *         in this class are directly inherited from the C# version of the
  *         shared memory MDS program wirtten by my collegue Seung-Hee Bae.
  * 
  *         This class performs the partial calculation of the following matrrix
- *         multiplication. BC= BofZ * preX. Please see ParallelMDSMapReduce.java
- *         for a complete description of the terms and the algorithm.
+ *         multiplication. BC= BofZ * preX. Please see Yang Ruan's disseration
+ *         to see the entire formula
  * 
  * @author Seung-Hee Bae: sebae@cs.indiana.edu
  *			Modify Twister-MDS version of this class for Twister-DAMDS version.

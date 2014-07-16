@@ -13,7 +13,7 @@ import cgl.imr.types.DoubleValue;
 import cgl.imr.types.StringKey;
 
 /**
- * @author Jaliya Ekanayake, jekanaya@cs.indiana.edu
+ * @author Yang Ruan, yangruan@cs.indiana.edu
  * 
  *         Simply add the partial stress and make it a total. Lot of stesses :)
  * 

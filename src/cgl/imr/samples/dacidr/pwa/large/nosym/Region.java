@@ -14,7 +14,7 @@ import cgl.imr.base.Value;
 /**
  * Represents a collection of computable blocks.
  * 
- * @author Binjing - zhangbj
+ * @author Yang Ruan (yangruan@cs.indiana.edu)
  * @author Saliya Ekanayake (sekanaya at cs dot indiana dot edu)
  * 
  */

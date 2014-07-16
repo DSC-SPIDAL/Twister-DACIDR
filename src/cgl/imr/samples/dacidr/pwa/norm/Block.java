@@ -104,8 +104,11 @@ public class Block implements Value {
 		return length;
 	}
 
-	public void setLength(short[][] length) {
+	public void setLength(short[][] length, boolean isTranspose) {
 		this.length = length;
+        this.isTranspose = isTranspose;
+        this.rowSize = isTranspose ? length[0].length : length.length;
+        this.colSize = isTranspose ? length.length : length[0].length;
 	}
 
 	public short[][] getIdenticalPairs() {
@@ -249,13 +252,13 @@ public class Block implements Value {
                 int rows = isTranspose ? colSize : rowSize;
                 int cols = isTranspose ? rowSize : colSize;
                 
-                this.score = new short[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        this.score[i][j] = din.readShort();
-                    }
-                }
-                
+//                this.score = new short[rows][cols];
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        this.score[i][j] = din.readShort();
+//                    }
+//                }
+//                
                 this.length = new short[rows][cols];
                 for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
@@ -269,14 +272,14 @@ public class Block implements Value {
                         this.identicalPairs[i][j] = din.readShort();
                     }
                 }
-                
-                this.scoreReverse = new short[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        this.scoreReverse[i][j] = din.readShort();
-                    }
-                }
-                
+//                
+//                this.scoreReverse = new short[rows][cols];
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        this.scoreReverse[i][j] = din.readShort();
+//                    }
+//                }
+//                
                 this.lengthReverse = new short[rows][cols];
                 for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
@@ -290,34 +293,34 @@ public class Block implements Value {
                         this.identicalPairsReverse[i][j] = din.readShort();
                     }
                 }
-                
-                this.scoreA = new short[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        this.scoreA[i][j] = din.readShort();
-                    }
-                }
-                
-                this.scoreAReverse = new short[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        this.scoreAReverse[i][j] = din.readShort();
-                    }
-                }
-                
-                this.scoreB = new short[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        this.scoreB[i][j] = din.readShort();
-                    }
-                }
-                
-                this.scoreBReverse = new short[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        this.scoreBReverse[i][j] = din.readShort();
-                    }
-                }
+//                
+//                this.scoreA = new short[rows][cols];
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        this.scoreA[i][j] = din.readShort();
+//                    }
+//                }
+//                
+//                this.scoreAReverse = new short[rows][cols];
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        this.scoreAReverse[i][j] = din.readShort();
+//                    }
+//                }
+//                
+//                this.scoreB = new short[rows][cols];
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        this.scoreB[i][j] = din.readShort();
+//                    }
+//                }
+//                
+//                this.scoreBReverse = new short[rows][cols];
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        this.scoreBReverse[i][j] = din.readShort();
+//                    }
+//                }
                 
             }
             din.close();
@@ -354,11 +357,11 @@ public class Block implements Value {
                 dout.writeInt(rowSize);
                 dout.writeInt(colSize);
 
-                for (short[] row : score) {
-                    for (int i : row) {
-                        dout.writeShort(i);
-                    }
-                }
+//                for (short[] row : score) {
+//                    for (int i : row) {
+//                        dout.writeShort(i);
+//                    }
+//                }
                 
                 for (short[] row : length) {
                     for (short i : row) {
@@ -371,11 +374,11 @@ public class Block implements Value {
                     }
                 }
                 
-                for (short[] row : scoreReverse) {
-                    for (int i : row) {
-                        dout.writeShort(i);
-                    }
-                }
+//                for (short[] row : scoreReverse) {
+//                    for (int i : row) {
+//                        dout.writeShort(i);
+//                    }
+//                }
                 
                 for (short[] row : lengthReverse) {
                     for (short i : row) {
@@ -388,29 +391,29 @@ public class Block implements Value {
                     }
                 }
                 
-                for (short[] row : scoreA) {
-                    for (int i : row) {
-                        dout.writeShort(i);
-                    }
-                }
-                
-                for (short[] row : scoreAReverse) {
-                    for (int i : row) {
-                        dout.writeShort(i);
-                    }
-                }
-                
-                for (short[] row : scoreB) {
-                    for (int i : row) {
-                        dout.writeShort(i);
-                    }
-                }
-                
-                for (short[] row : scoreBReverse) {
-                    for (int i : row) {
-                        dout.writeShort(i);
-                    }
-                }
+//                for (short[] row : scoreA) {
+//                    for (int i : row) {
+//                        dout.writeShort(i);
+//                    }
+//                }
+//                
+//                for (short[] row : scoreAReverse) {
+//                    for (int i : row) {
+//                        dout.writeShort(i);
+//                    }
+//                }
+//                
+//                for (short[] row : scoreB) {
+//                    for (int i : row) {
+//                        dout.writeShort(i);
+//                    }
+//                }
+//                
+//                for (short[] row : scoreBReverse) {
+//                    for (int i : row) {
+//                        dout.writeShort(i);
+//                    }
+//                }
                 
             }
             dout.flush();

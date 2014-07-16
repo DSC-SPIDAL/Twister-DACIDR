@@ -1,6 +1,5 @@
 package cgl.imr.samples.dacidr.pwa.large.sym;
 
-import java.io.*;
 import java.util.*;
 
 import org.safehaus.uuid.UUIDGenerator;
@@ -15,7 +14,6 @@ import cgl.imr.base.impl.JobConf;
 import cgl.imr.client.TwisterDriver;
 import cgl.imr.types.BytesValue;
 import cgl.imr.types.StringKey;
-import cgl.imr.types.StringValue;
 
 /**
  * @author Yang Ruan (yangruan at cs dot indiana dot edu)
