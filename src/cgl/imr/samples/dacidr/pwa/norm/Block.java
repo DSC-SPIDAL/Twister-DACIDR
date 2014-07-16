@@ -352,7 +352,7 @@ public class Block implements Value {
             dout.writeInt(rowBlockNumber);
             dout.writeInt(columnBlockNumber);
 
-            if (score != null) {
+            if (length != null) {
                 dout.writeBoolean(isTranspose);
                 dout.writeInt(rowSize);
                 dout.writeInt(colSize);

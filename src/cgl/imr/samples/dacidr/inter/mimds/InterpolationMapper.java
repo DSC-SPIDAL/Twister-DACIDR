@@ -1,3 +1,6 @@
+/**
+ * @author Yang Ruan (yangruan@indiana.edu)
+ */
 package cgl.imr.samples.dacidr.inter.mimds;
 
 

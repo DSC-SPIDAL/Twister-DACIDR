@@ -209,15 +209,15 @@ public class PWAMapTask implements MapTask {
 							length[j][k] = (short)ad.getAlignmentLengthExcludingEndGaps();
 							identicalPairs[j][k] = (short)ad.getNumIdenticals();
 
-							int startA = ad.getFirstAlignedSequenceStartOffset();
-							int endA = ad.getFirstAlignedSequenceEndOffset();
-							int startB = ad.getSecondAlignedSequenceStartOffset();
-							int endB = ad.getSecondAlignedSequenceEndOffset();
+//							int startA = ad.getFirstAlignedSequenceStartOffset();
+//							int endA = ad.getFirstAlignedSequenceEndOffset();
+//							int startB = ad.getSecondAlignedSequenceStartOffset();
+//							int endB = ad.getSecondAlignedSequenceEndOffset();
 
-							ProteinSequence partialA 
-							= new ProteinSequence(rowBlockSequences[j].toString().substring(startA, endA + 1));
-							ProteinSequence partialB 
-							= new ProteinSequence(colBlockSequences[k].toString().substring(startB, endB + 1));
+//							ProteinSequence partialA 
+//							= new ProteinSequence(rowBlockSequences[j].toString().substring(startA, endA + 1));
+//							ProteinSequence partialB 
+//							= new ProteinSequence(colBlockSequences[k].toString().substring(startB, endB + 1));
 
 //							scoreA[j][k] = (short)AlignmentData.getSelfAlignedScore(partialA, nwScoringMatrix);
 //							scoreB[j][k] = (short)AlignmentData.getSelfAlignedScore(partialB, nwScoringMatrix);
@@ -275,10 +275,10 @@ public class PWAMapTask implements MapTask {
 //								score[j][k] = ad.getScore();
 								length[j][k] = ad.getAlignmentLength();
 								identicalPairs[j][k] = ad.getNumberOfIdenticalBasePairs(false);
-								int startA = ad.getFirstAlignedSequenceStartOffset();
-								int endA = ad.getFirstAlignedSequenceEndOffset();
-								int startB = ad.getSecondAlignedSeqeunceStartOffset();
-								int endB = ad.getSecondAlignedSeqeunceEndOffset();
+//								int startA = ad.getFirstAlignedSequenceStartOffset();
+//								int endA = ad.getFirstAlignedSequenceEndOffset();
+//								int startB = ad.getSecondAlignedSeqeunceStartOffset();
+//								int endB = ad.getSecondAlignedSeqeunceEndOffset();
 								
 								
 //								Sequence partialA =	getPartialSequence(startA, endA, sequenceA);
@@ -340,10 +340,10 @@ public class PWAMapTask implements MapTask {
 								identicalPairs[j][k] = ad.getNumberOfIdenticalBasePairs(false);
 								identicalPairs[k][j] = identicalPairs[j][k];
 								
-								int startA = ad.getFirstAlignedSequenceStartOffset();
-								int endA = ad.getFirstAlignedSequenceEndOffset();
-								int startB = ad.getSecondAlignedSeqeunceStartOffset();
-								int endB = ad.getSecondAlignedSeqeunceEndOffset();
+//								int startA = ad.getFirstAlignedSequenceStartOffset();
+//								int endA = ad.getFirstAlignedSequenceEndOffset();
+//								int startB = ad.getSecondAlignedSeqeunceStartOffset();
+//								int endB = ad.getSecondAlignedSeqeunceEndOffset();
 //								
 //								System.out.println("Total A:" + sequenceA.toString().length());
 //								System.out.println("startA: " + startA);
@@ -421,6 +421,9 @@ public class PWAMapTask implements MapTask {
 					e.printStackTrace();
 				}
 			}
+			
+			
+			//System.out.println(length[0][0]);
 //			block.setScore(score, false);
 			block.setLength(length, false);
 			block.setIdenticalPairs(identicalPairs);
