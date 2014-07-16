@@ -18,13 +18,21 @@ The scripts of running these applications are under script folder
 1. Running ASA
 The normal script of running ASA is pwaMul.sh
 
-```arguments: [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] [num_of_partitions] [data_dir] [gene_block_prefix] [tmp_output_prefix] [output_map_file] [aligner type] [score matrix type] [sequence type]```
+```
+arguments: [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] 
+[num_of_partitions] [data_dir] [gene_block_prefix] [tmp_output_prefix] 
+[output_map_file] [aligner type] [score matrix type] [sequence type]
+```
 
 2. Running MDS
 The normal script of running MDS is run_dasmacof_cg_mem.sh
 
-```Usage: [1. Num map tasks ] [2. Input Folder] [3. Input File Prefix] [4. Input Weight Prefix] [5. IDs File ] 
-        [6. Label Data File ] [7. Output File ] [8. Threshold value ] [9. The Target Dimension ] [10. Cooling parameter (alpha) ] [11. Input Data Size] [12. Final Weight Prefix] [13. CG iteration num] [14. CG Error Threshold]```
+```
+Usage: [1. Num map tasks ] [2. Input Folder] [3. Input File Prefix] [4. Input Weight Prefix] [5. IDs File ] 
+        [6. Label Data File ] [7. Output File ] [8. Threshold value ] [9. The Target Dimension ] 
+        [10. Cooling parameter (alpha) ] [11. Input Data Size] [12. Final Weight Prefix] 
+        [13. CG iteration num] [14. CG Error Threshold]
+```
 
 ##TWISTER SETUP!!
 The Twister Pipeline is used to process genomic sequence information on a computer cluster.
@@ -62,7 +70,8 @@ The Twister Pipeline is used to process genomic sequence information on a comput
 * (easier to process) - pwaMul.sh function performs distance matrix calculations - resulting files are in directory specified when prior functions are run.
 
 ```
-[lsaggu@i97 dacidr]$ ./pwaFileSpliter.sh args: [gene_seq_file] [sequence_count] [num_of_partitions] [out_dir] [gene_block_prefix] [output_idx file] [Alphabet]
+[lsaggu@i97 dacidr]$ ./pwaFileSpliter.sh args: [gene_seq_file] [sequence_count] 
+[num_of_partitions] [out_dir] [gene_block_prefix] [output_idx file] [Alphabet]
 
 [lsaggu@i97 dacidr]$ ./pwaFileSpliter.sh ~/data/test/4640_fasta.txt 4640 16 ~/data/test/16/ input_ ~/data/test/4640_16.idx RNA
 ```
@@ -77,7 +86,9 @@ The Twister Pipeline is used to process genomic sequence information on a comput
 [lsaggu@i97 dacidr]$ ./pwaMul.sh
 
 THis generates pid_ as well
-args: [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] [num_of_partitions] [data_dir] [gene_block_prefix] [tmp_output_prefix] [output_map_file] [aligner type][score matrix type] [sequence type]
+args: [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] [num_of_partitions] 
+[data_dir] [gene_block_prefix] [tmp_output_prefix] [output_map_file] [aligner type]
+[score matrix type] [sequence type]
 
 [lsaggu@i97 dacidr]$ ./pwaMul.sh 16 4 4640 16 ~/data/test/16/ input_ swg_ 123 SWG edn RNA
 ```
@@ -123,7 +134,10 @@ mdsFileSplit.sh [1. Data File ] [2. Temporary directory to split data ]
 
 ```
 run_dasmacof_cg_mem.sh [1. Num map tasks ] [2. Input Folder]
-[3. Input File Prefix] [4. Input Weight Prefix] [5. IDs File ] [6. Label Data File ] [7. Output File ] [8. Threshold value ] [9. The Target Dimension ] [10. Cooling parameter (alpha) ] [11. Input Data Size] [12. Final Weight Prefix] [13. CG iteration num] [14. CG Error Threshold]
+[3. Input File Prefix] [4. Input Weight Prefix] [5. IDs File ] 
+[6. Label Data File ] [7. Output File ] [8. Threshold value ] 
+[9. The Target Dimension ] [10. Cooling parameter (alpha) ] 
+[11. Input Data Size] [12. Final Weight Prefix] [13. CG iteration num] [14. CG Error Threshold]
 ```
 
 1. The number of cores running job (nodes * ppn)
