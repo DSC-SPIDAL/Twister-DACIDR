@@ -88,10 +88,10 @@ The Twister Pipeline is used to process genomic sequence information on a comput
 
 THis generates pid_ as well
 args: [num_of_map_tasks] [num_of_reduce_tasks] [sequence_count] [num_of_partitions] 
-[data_dir] [gene_block_prefix] [tmp_output_prefix] [output_map_file] [aligner type]
+[data_dir] [gene_block_prefix] [tmp_output_prefix] [aligner type]
 [score matrix type] [sequence type]
 
-[lsaggu@i97 dacidr]$ ./pwaMul.sh 16 4 4640 16 ~/data/test/16/ input_ swg_ 123 SWG edn RNA
+[lsaggu@i97 dacidr]$ ./pwaMul.sh 16 4 4640 16 ~/data/test/16/ input_ swg_ SWG edn RNA
 ```
 1. num_of_map_tasks = number of cores (nodes*ppn) Don't include head node
 2. num_of_reduce_tasks = number of nodes (Don't include head node)
