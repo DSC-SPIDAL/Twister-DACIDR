@@ -11,6 +11,92 @@ package cgl.imr.samples.dacidr.wdasmacof.vary;
  */
 public class MatrixUtils {
 
+    /**
+     * Block matrix multiplication.
+     *
+     * @param A
+     *            - Matrix
+     * @param Adiag
+     * 			  - Diag value of A
+     * @param B
+     *            - Matrix
+     * @param aHeight
+     *            - height of matrix A
+     * @param bWidth
+     *            - width of matrix B
+     * @param comm
+     *            - size of the common face
+     * @param rowOffset
+     * 			  - offset from row index to col index
+     * @return
+     */
+    public static double[][] matrixMultiply(short[][] A, double scaleFactorA, double[] Adiag, double[][] B,
+                                            int aHeight, int bWidth, int comm, int bz, int rowOffset) {
+        double[][] C = new double[aHeight][bWidth];
+
+        int aHeightBlocks = aHeight / bz; // size = Height of A
+        int aLastBlockHeight = aHeight - (aHeightBlocks * bz);
+        if (aLastBlockHeight > 0) {
+            aHeightBlocks++;
+        }
+
+        int bWidthBlocks = bWidth / bz; // size = Width of B
+        int bLastBlockWidth = bWidth - (bWidthBlocks * bz);
+        if (bLastBlockWidth > 0) {
+            bWidthBlocks++;
+        }
+
+        int commnBlocks = comm / bz; // size = Width of A or Height of B
+        int commLastBlockWidth = comm - (commnBlocks * bz);
+        if (commLastBlockWidth > 0) {
+            commnBlocks++;
+        }
+
+        int aBlockHeight = bz;
+        int bBlockWidth = bz;
+        int commBlockWidth = bz;
+
+        for (int ib = 0; ib < aHeightBlocks; ib++) {
+            if (aLastBlockHeight > 0 && ib == (aHeightBlocks - 1)) {
+                aBlockHeight = aLastBlockHeight;
+            }
+            bBlockWidth = bz;
+            commBlockWidth = bz;
+            for (int jb = 0; jb < bWidthBlocks; jb++) {
+                if (bLastBlockWidth > 0 && jb == (bWidthBlocks - 1)) {
+                    bBlockWidth = bLastBlockWidth;
+                }
+                commBlockWidth = bz;
+                for (int kb = 0; kb < commnBlocks; kb++) {
+                    if (commLastBlockWidth > 0 && kb == (commnBlocks - 1)) {
+                        commBlockWidth = commLastBlockWidth;
+                    }
+
+                    for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
+                        for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
+                            for (int k = kb * bz; k < (kb * bz)
+                                    + commBlockWidth; k++) {
+                                double aVal = 0;
+                                if (i + rowOffset == k) {
+                                    aVal = Adiag[i];
+                                }
+                                else {
+                                    //reverse the value from weight
+                                    aVal = -(A[i][k]*scaleFactorA);
+                                }
+
+                                if(aVal != 0 && B[k][j]!= 0)
+                                    C[i][j] += aVal * B[k][j];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return C;
+    }
+
 	/**
 	 * Block matrix multiplication.
 	 * 
@@ -32,70 +118,7 @@ public class MatrixUtils {
 	 */
 	public static double[][] matrixMultiply(short[][] A, double[] Adiag, double[][] B,
 			int aHeight, int bWidth, int comm, int bz, int rowOffset) {
-
-		double[][] C = new double[aHeight][bWidth];
-
-		int aHeightBlocks = aHeight / bz; // size = Height of A
-		int aLastBlockHeight = aHeight - (aHeightBlocks * bz);
-		if (aLastBlockHeight > 0) {
-			aHeightBlocks++;
-		}
-
-		int bWidthBlocks = bWidth / bz; // size = Width of B
-		int bLastBlockWidth = bWidth - (bWidthBlocks * bz);
-		if (bLastBlockWidth > 0) {
-			bWidthBlocks++;
-		}
-
-		int commnBlocks = comm / bz; // size = Width of A or Height of B
-		int commLastBlockWidth = comm - (commnBlocks * bz);
-		if (commLastBlockWidth > 0) {
-			commnBlocks++;
-		}
-
-		int aBlockHeight = bz;
-		int bBlockWidth = bz;
-		int commBlockWidth = bz;
-
-		for (int ib = 0; ib < aHeightBlocks; ib++) {
-			if (aLastBlockHeight > 0 && ib == (aHeightBlocks - 1)) {
-				aBlockHeight = aLastBlockHeight;
-			}
-			bBlockWidth = bz;
-			commBlockWidth = bz;
-			for (int jb = 0; jb < bWidthBlocks; jb++) {
-				if (bLastBlockWidth > 0 && jb == (bWidthBlocks - 1)) {
-					bBlockWidth = bLastBlockWidth;
-				}
-				commBlockWidth = bz;
-				for (int kb = 0; kb < commnBlocks; kb++) {
-					if (commLastBlockWidth > 0 && kb == (commnBlocks - 1)) {
-						commBlockWidth = commLastBlockWidth;
-					}
-
-					for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
-						for (int j = jb * bz; j < (jb * bz) + bBlockWidth; j++) {
-							for (int k = kb * bz; k < (kb * bz)
-									+ commBlockWidth; k++) {
-								double aVal = 0;
-								if (i + rowOffset == k) {
-									aVal = Adiag[i];
-								}
-								else {
-									//reverse the value from weight
-									aVal = -(double)A[i][k];
-								}
-								
-								if(aVal != 0 && B[k][j]!= 0)
-									C[i][j] += aVal * B[k][j];
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return C;
+        return matrixMultiply(A, 1.0, Adiag, B, aHeight, bWidth, comm, bz,rowOffset);
 	}
 
 	/**

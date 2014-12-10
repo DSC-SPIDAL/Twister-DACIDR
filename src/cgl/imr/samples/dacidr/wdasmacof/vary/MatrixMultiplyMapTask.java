@@ -1,24 +1,20 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
-import cgl.imr.base.Key;
-import cgl.imr.base.MapOutputCollector;
-import cgl.imr.base.MapTask;
-import cgl.imr.base.TwisterException;
-import cgl.imr.base.Value;
+import cgl.imr.base.*;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.base.impl.MapperConf;
 import cgl.imr.types.StringKey;
 import cgl.imr.types.StringValue;
 import cgl.imr.worker.MemCache;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class MatrixMultiplyMapTask implements MapTask{
 
 	JobConf jobConf;
-	short[][] weight;
+	short[][] weights;
 	int rowOffset;
 	int blockHeight;
 	int N;
@@ -37,10 +33,13 @@ public class MatrixMultiplyMapTask implements MapTask{
 		// TODO Auto-generated method stub
 		this.jobConf = jobConf;
 		
-		MDSMatrixData deltaMatData = null;
+		MDSShortMatrixData deltaMatData = null;
 		String inputFolder = jobConf.getProperty("InputFolder");
-		String inputPrefix = jobConf.getProperty("WeightPrefix");
-		String fileName = (inputFolder + "/" + inputPrefix + mapConf.getMapTaskNo())
+        String inputPrefix = jobConf.getProperty("InputPrefix");
+		String weightPrefix = jobConf.getProperty("WeightPrefix");
+        String fileName = (inputFolder + "/" + inputPrefix + mapConf.getMapTaskNo())
+                .replaceAll("//", "/");
+		String weightName = (inputFolder + "/" + weightPrefix + mapConf.getMapTaskNo())
 				.replaceAll("//", "/");
 		String idsFile = jobConf.getProperty("IdsFile");
 
@@ -48,7 +47,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 			BufferedReader br = new BufferedReader(new FileReader(idsFile));
 			String line;
 			String[] tokens;
-			deltaMatData = new MDSMatrixData();
+			deltaMatData = new MDSShortMatrixData();
 			while((line = br.readLine())!=null){
 				tokens = line.split("\t");
 				if(Integer.parseInt(tokens[0]) == mapConf.getMapTaskNo()){
@@ -65,13 +64,16 @@ public class MatrixMultiplyMapTask implements MapTask{
 		}
 		
 		try {
-			weight = FileOperation.loadWeights(fileName, 
-					deltaMatData.getHeight(), deltaMatData.getWidth());
+            deltaMatData.loadDeltaFromBinFile(fileName);
+            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
+                    deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
+                    deltaMatData.getWidth());
+            double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 			V = new double[deltaMatData.getHeight()];
 			for (int i = 0; i < deltaMatData.getHeight(); ++i) {
 				for (int j = 0; j < deltaMatData.getWidth(); ++j) {
 					if (i + deltaMatData.getRowOffset() != j)
-						V[i] += weight[i][j];
+						V[i] += weights[i][j]*weightMultiply;
 				}
 				V[i] += 1;
 			}
@@ -94,8 +96,9 @@ public class MatrixMultiplyMapTask implements MapTask{
 				jobConf.getJobId(), memCacheKey.toString()));
 		double[][] X = mData.getData();
 
+        double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		// Next we can calculate the BofZ * preX.
-		X = MatrixUtils.matrixMultiply(weight, V, X, blockHeight,
+		X = MatrixUtils.matrixMultiply(weights, weightMultiply, V, X, blockHeight,
 				X[0].length, N, bz, rowOffset);
 
 		// Send C with the map task number to a reduce task. Which will simply

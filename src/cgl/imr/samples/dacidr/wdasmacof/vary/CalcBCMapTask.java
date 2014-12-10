@@ -1,18 +1,15 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import cgl.imr.base.Key;
-import cgl.imr.base.MapOutputCollector;
-import cgl.imr.base.MapTask;
-import cgl.imr.base.TwisterException;
-import cgl.imr.base.Value;
+import cgl.imr.base.*;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.base.impl.MapperConf;
 import cgl.imr.types.StringKey;
 import cgl.imr.types.StringValue;
 import cgl.imr.worker.MemCache;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * 
@@ -93,6 +90,7 @@ public class CalcBCMapTask implements MapTask {
 		if (tCur > 10E-10) {
 			diff = Math.sqrt(2.0 * targetDim)  * tCur;
 		}
+        double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		for (int i = blockOffset; i < blockOffset + blockHeight; i++) {
 			tmpI = i - blockOffset;
 			BofZ[tmpI][i] = 0;
@@ -109,12 +107,12 @@ public class CalcBCMapTask implements MapTask {
 				// this is for the i!=j case. For i==j case will be calculated
 				// separately.
 				if (i != j) {
-					if(weights[tmpI][j] != 0){
+                    double weight = weights[tmpI][j] * weightMultiply;
+                    if(weight != 0){
 						double dist = calculateDistance(preX, preX[0].length, i, j);
 						double origD = deltaBlock[tmpI][j] / (double)Short.MAX_VALUE;
 						if (dist >= 1.0E-10 && diff < origD) {
-							BofZ[tmpI][j] = (float) (weights[tmpI][j] * 
-									vBlockValue * (origD - diff) / dist);
+							BofZ[tmpI][j] = (float) (weight * vBlockValue * (origD - diff) / dist);
 						} else {
 							BofZ[tmpI][j] = 0;
 						}
@@ -194,8 +192,9 @@ public class CalcBCMapTask implements MapTask {
 		//System.out.println(mapConf.getMapTaskNo() + " " + fileName);
 		try {
 			deltaMatData.loadDeltaFromBinFile(fileName);
-			weights = FileOperation.loadWeights(
-					weightName, deltaMatData.getHeight(), deltaMatData.getWidth());
+            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
+                    deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
+                    deltaMatData.getWidth());
 		} catch (Exception e) {
 			throw new TwisterException(e);
 		}			

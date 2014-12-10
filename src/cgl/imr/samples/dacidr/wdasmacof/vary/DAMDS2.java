@@ -5,21 +5,6 @@ package cgl.imr.samples.dacidr.wdasmacof.vary;
  *		Twister-WDAMDS is implemented based on Twister-MDS.
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
-import org.safehaus.uuid.UUIDGenerator;
-
 import cgl.imr.base.Key;
 import cgl.imr.base.TwisterException;
 import cgl.imr.base.TwisterModel;
@@ -30,6 +15,15 @@ import cgl.imr.client.TwisterDriver;
 import cgl.imr.types.DoubleArray;
 import cgl.imr.types.DoubleValue;
 import cgl.imr.types.StringValue;
+import org.safehaus.uuid.UUIDGenerator;
+
+import java.io.*;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class DAMDS2 {
 
@@ -72,12 +66,13 @@ public class DAMDS2 {
 	static double CG_REAL_ITER = 0;
 	static double SMACOF_REAL_ITER = 0;
 	static double CG_THRESHOLD = 1;
+    static boolean sammonMapping = false;
 
 	public static void main(String[] args) {
 
 		double beginTime = System.currentTimeMillis();
 
-		if (args.length != 14) {
+		if (args.length != 15) {
 			System.out.println("Usage: ");
 			System.out.println("[1. Num map tasks ]");
 			System.out.println("[2. Input Folder]");
@@ -93,6 +88,7 @@ public class DAMDS2 {
 			System.out.println("[12. Final Weight Prefix]");
 			System.out.println("[13. CG iteration num]");
 			System.out.println("[14. CG Error Threshold]");
+			System.out.println("[15. Sammon mapping (boolean)]");
 			System.exit(0);
 		}
 
@@ -110,6 +106,7 @@ public class DAMDS2 {
 		String finalWeightPrefix = args[11];
 		CG_ITER = Integer.parseInt(args[12]);
 		CG_THRESHOLD = Double.parseDouble(args[13]);
+        sammonMapping = Boolean.parseBoolean(args[14]);
 
 		System.out.println("[1. Num map tasks ]:\t" + numMapTasks);
 		System.out.println("[2. Input Folder]:\t" + inputFolder);
@@ -125,6 +122,7 @@ public class DAMDS2 {
 		System.out.println("[12. Final Weight Prefix]:\t" + finalWeightPrefix);
 		System.out.println("[13. CG Iterations]:\t" + CG_ITER);
 		System.out.println("[14. CG Threshold]:\t" + CG_THRESHOLD);
+        System.out.println("[15. Sammon mapping]:\t" +sammonMapping);
 		
 		try {
 			performInitialCalculations(numMapTasks, inputFolder, inputPrefix, 
@@ -462,27 +460,6 @@ public class DAMDS2 {
 
 	}
 
-	/**
-	 * 
-	 * @param N
-	 *            - Size of the data
-	 * @param numMapTasks
-	 *            - Number of map tasks
-	 * @param tmpDir
-	 *            - Temporary directory where the data is
-	 * @param brokerHost
-	 *            - Broker Host, e.g. 156.56.104.15
-	 * @param brokerPort
-	 *            - Broker Port e.g. 3045
-	 * @param numNodes
-	 *            - Number of nodes in the cluster
-	 * @param bz
-	 *            - block size of the block matrix multiplication. This has
-	 *            nothing to do with the row block splitting which is done based
-	 *            on the number of map tasks.
-	 * @return
-	 * @throws MRException
-	 */
 	private static TwisterModel configureMatrixMutiply(int numMapTasks,
 			String inputFolder, String weightPrefix, String idsFile) throws TwisterException {
 		String jobID = "calc-CG-" + uuidGen.generateRandomBasedUUID();
@@ -636,8 +613,6 @@ public class DAMDS2 {
 	 * 
 	 * @param numMapTasks
 	 *            - Number of map tasks.
-	 * @param partitionFile
-	 *            - Partition file.
 	 * @param idsFile
 	 *            - File containing IDs.
 	 * @throws Exception

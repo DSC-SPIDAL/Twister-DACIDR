@@ -1,17 +1,14 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import cgl.imr.base.Key;
-import cgl.imr.base.MapOutputCollector;
-import cgl.imr.base.MapTask;
-import cgl.imr.base.TwisterException;
-import cgl.imr.base.Value;
+import cgl.imr.base.*;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.base.impl.MapperConf;
 import cgl.imr.types.DoubleArray;
 import cgl.imr.types.StringKey;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class AvgOrigDistanceMapTask implements MapTask {
 
@@ -59,8 +56,16 @@ public class AvgOrigDistanceMapTask implements MapTask {
 
 		try {
 			rowData.loadDeltaFromBinFile(fileName);
-			weights = FileOperation.loadWeights(weightName, rowData.getHeight(), rowData.getWidth());
-		} catch (Exception e) {
+            // The weights are used in this map-reduce stage only to decide if a distance value
+            // should be considered (non zero weight) or not (zero weight).
+            // In Sammon mode we'll give non zero weights for all distances,
+            // hence the dummy mean value of 1 loading Sammon weights for this map task.
+            // In other map-reduce stages that follow this we'll load Sammon weights with correct
+            // mean value that we find in this map-reduce stage
+            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(rowData.data, 1, rowData.getHeight(),
+                    rowData.getWidth()) : FileOperation.loadWeights(weightName, rowData.getHeight(),
+                    rowData.getWidth());
+        } catch (Exception e) {
 			throw new TwisterException(e);
 		}
 	}

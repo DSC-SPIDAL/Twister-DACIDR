@@ -1,20 +1,16 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
-import cgl.imr.base.Key;
-import cgl.imr.base.MapOutputCollector;
-import cgl.imr.base.MapTask;
-import cgl.imr.base.TwisterException;
-import cgl.imr.base.Value;
+import cgl.imr.base.*;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.base.impl.MapperConf;
 import cgl.imr.types.DoubleValue;
 import cgl.imr.types.StringKey;
 import cgl.imr.types.StringValue;
 import cgl.imr.worker.MemCache;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * 
@@ -79,8 +75,10 @@ public class StressMapTask implements MapTask {
 
 		try {
 			deltaBlock.loadDeltaFromBinFile(fileName);
-			weights = FileOperation.loadWeights(
-				weightName, deltaBlock.getHeight(), deltaBlock.getWidth());
+            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(deltaBlock.data, DAMDS2.avgOrigDistance,
+                    deltaBlock.getHeight(),
+                    deltaBlock.getWidth()) : FileOperation.loadWeights(weightName, deltaBlock.getHeight(),
+                    deltaBlock.getWidth());
 	
 			
 			rowHeight = deltaBlock.getHeight();
@@ -117,10 +115,12 @@ public class StressMapTask implements MapTask {
 		if (tCur > 10E-10) {
 			diff = Math.sqrt(2.0 * targetDim) * tCur;
 		}
+        double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		for (int i = rowOffset; i < rowOffset + rowHeight; i++) {
 			tmpI = i - rowOffset;
 			for (int j = 0; j < N; j++) {
-				if(weights[tmpI][j] != 0){
+                double weight = weights[tmpI][j] * weightMultiply;
+                if(weight != 0){
 					double dist;
 					if (j != i) {
 						dist = calculateDistance(preXData, preXData[0].length, i, j);
@@ -131,7 +131,7 @@ public class StressMapTask implements MapTask {
 					double heatDist = origD - diff;
 					double d = origD >= diff 
 								? heatDist - dist : 0;
-					sigma += weights[tmpI][j] * d * d;
+					sigma += weight * d * d;
 				}
 			}
 		}
