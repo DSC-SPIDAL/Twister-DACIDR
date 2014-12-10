@@ -153,7 +153,7 @@ public class DAMDS2 {
 							inputPrefix, weightPrefix, idsFile);
 			
 			TwisterModel mmDriver = 
-					configureMatrixMutiply(numMapTasks, inputFolder, weightPrefix, idsFile);
+					configureMatrixMutiply(numMapTasks, inputFolder, inputPrefix, weightPrefix, idsFile);
 
 			double QoR1 = 0;
 			double QoR2 = 0;
@@ -461,7 +461,7 @@ public class DAMDS2 {
 	}
 
 	private static TwisterModel configureMatrixMutiply(int numMapTasks,
-			String inputFolder, String weightPrefix, String idsFile) throws TwisterException {
+			String inputFolder, String inputPrefix, String weightPrefix, String idsFile) throws TwisterException {
 		String jobID = "calc-CG-" + uuidGen.generateRandomBasedUUID();
 		// we need only one reduce task to aggregate the parts of X.
 		int numReducers = 1;
@@ -476,6 +476,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_BZ, String.valueOf(BLOCK_SIZE));
 		jobConf.addProperty(PROP_N, String.valueOf(N));
 		jobConf.addProperty("InputFolder", inputFolder);
+		jobConf.addProperty("InputPrefix", inputPrefix);
 		jobConf.addProperty("WeightPrefix", weightPrefix);
 		jobConf.addProperty("IdsFile", idsFile);
 
