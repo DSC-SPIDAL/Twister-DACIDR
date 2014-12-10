@@ -70,6 +70,6 @@ done
 
 
 #echo $cp
-java -Xmx8192m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.dacidr.wdasmacof.vary.DAMDS2 $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14}
+java -Xmx8192m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.dacidr.wdasmacof.vary.DAMDS2 $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} {$15}
 
 
