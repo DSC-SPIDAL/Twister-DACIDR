@@ -106,7 +106,7 @@ public class DAMDS2 {
 		String finalWeightPrefix = args[11];
 		CG_ITER = Integer.parseInt(args[12]);
 		CG_THRESHOLD = Double.parseDouble(args[13]);
-        sammonMapping = Boolean.parseBoolean(args[14]);
+                sammonMapping = Boolean.parseBoolean(args[14]);
 
 		System.out.println("[1. Num map tasks ]:\t" + numMapTasks);
 		System.out.println("[2. Input Folder]:\t" + inputFolder);
@@ -122,7 +122,7 @@ public class DAMDS2 {
 		System.out.println("[12. Final Weight Prefix]:\t" + finalWeightPrefix);
 		System.out.println("[13. CG Iterations]:\t" + CG_ITER);
 		System.out.println("[14. CG Threshold]:\t" + CG_THRESHOLD);
-        System.out.println("[15. Sammon mapping]:\t" +sammonMapping);
+                System.out.println("[15. Sammon mapping]:\t" +sammonMapping);
 		
 		try {
 			performInitialCalculations(numMapTasks, inputFolder, inputPrefix, 
