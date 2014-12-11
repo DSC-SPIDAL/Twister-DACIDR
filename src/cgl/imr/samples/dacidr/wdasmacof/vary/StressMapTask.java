@@ -26,6 +26,7 @@ import java.io.IOException;
  */
 public class StressMapTask implements MapTask {
 
+    private boolean sammonMapping = false;
 	private double tCur = 0.0;
 	private int targetDim = 3;
 	private int rowHeight;
@@ -45,6 +46,7 @@ public class StressMapTask implements MapTask {
 		tCur = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_TCUR));
 		targetDim = Integer.parseInt(jobConf.getProperty(DAMDS2.PROP_D));
 
+        sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
 		String weightPrefix = jobConf.getProperty("WeightPrefix");
@@ -75,7 +77,7 @@ public class StressMapTask implements MapTask {
 
 		try {
 			deltaBlock.loadDeltaFromBinFile(fileName);
-            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(deltaBlock.data, DAMDS2.avgOrigDistance,
+            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaBlock.data, DAMDS2.avgOrigDistance,
                     deltaBlock.getHeight(),
                     deltaBlock.getWidth()) : FileOperation.loadWeights(weightName, deltaBlock.getHeight(),
                     deltaBlock.getWidth());
@@ -115,7 +117,7 @@ public class StressMapTask implements MapTask {
 		if (tCur > 10E-10) {
 			diff = Math.sqrt(2.0 * targetDim) * tCur;
 		}
-        double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
+        double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		for (int i = rowOffset; i < rowOffset + rowHeight; i++) {
 			tmpI = i - rowOffset;
 			for (int j = 0; j < N; j++) {

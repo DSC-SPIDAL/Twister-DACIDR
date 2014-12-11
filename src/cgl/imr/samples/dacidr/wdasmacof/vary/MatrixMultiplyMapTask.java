@@ -13,6 +13,7 @@ import java.io.IOException;
 
 public class MatrixMultiplyMapTask implements MapTask{
 
+    private boolean sammonMapping = false;
 	JobConf jobConf;
 	short[][] weights;
 	int rowOffset;
@@ -34,7 +35,8 @@ public class MatrixMultiplyMapTask implements MapTask{
 		this.jobConf = jobConf;
 		
 		MDSShortMatrixData deltaMatData = null;
-		String inputFolder = jobConf.getProperty("InputFolder");
+        sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
+        String inputFolder = jobConf.getProperty("InputFolder");
         String inputPrefix = jobConf.getProperty("InputPrefix");
 		String weightPrefix = jobConf.getProperty("WeightPrefix");
         String fileName = (inputFolder + "/" + inputPrefix + mapConf.getMapTaskNo())
@@ -65,10 +67,10 @@ public class MatrixMultiplyMapTask implements MapTask{
 		
 		try {
             deltaMatData.loadDeltaFromBinFile(fileName);
-            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
+            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
                     deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
                     deltaMatData.getWidth());
-            double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
+            double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 			V = new double[deltaMatData.getHeight()];
 			for (int i = 0; i < deltaMatData.getHeight(); ++i) {
 				for (int j = 0; j < deltaMatData.getWidth(); ++j) {
@@ -96,7 +98,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 				jobConf.getJobId(), memCacheKey.toString()));
 		double[][] X = mData.getData();
 
-        double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
+        double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		// Next we can calculate the BofZ * preX.
 		X = MatrixUtils.matrixMultiply(weights, weightMultiply, V, X, blockHeight,
 				X[0].length, N, bz, rowOffset);

@@ -15,6 +15,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 	MDSShortMatrixData rowData;
 	MapperConf mapConf;
 	short[][] weights;
+    boolean sammonMapping = false;
 
 	@Override
 	public void close() throws TwisterException {
@@ -26,6 +27,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 			throws TwisterException {
 		this.mapConf = mapConf;
 
+		sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
 		String idsFile = jobConf.getProperty("IdsFile");
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
@@ -62,7 +64,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
             // hence the dummy mean value of 1 loading Sammon weights for this map task.
             // In other map-reduce stages that follow this we'll load Sammon weights with correct
             // mean value that we find in this map-reduce stage
-            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(rowData.data, 1, rowData.getHeight(),
+            weights = sammonMapping ? FileOperation.loadSammonWeights(rowData.data, 1, rowData.getHeight(),
                     rowData.getWidth()) : FileOperation.loadWeights(weightName, rowData.getHeight(),
                     rowData.getWidth());
         } catch (Exception e) {

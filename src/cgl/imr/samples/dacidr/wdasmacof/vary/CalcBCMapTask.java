@@ -26,6 +26,7 @@ import java.io.IOException;
  */
 
 public class CalcBCMapTask implements MapTask {
+    private boolean sammonMapping = false;
 	int mapNo = 0;
 	private int bz = 0; // this is to hold the block size of the block matrix
 	private int N = 0;
@@ -78,8 +79,6 @@ public class CalcBCMapTask implements MapTask {
 	/**
 	 * Calculation of partial BofZ matrix block.
 	 * 
-	 * @param distMatBlock
-	 * @return
 	 */
 	private void calculateBofZ(double[][] preX) {
 		int tmpI = 0;
@@ -90,7 +89,7 @@ public class CalcBCMapTask implements MapTask {
 		if (tCur > 10E-10) {
 			diff = Math.sqrt(2.0 * targetDim)  * tCur;
 		}
-        double weightMultiply = DAMDS2.sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
+        double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		for (int i = blockOffset; i < blockOffset + blockHeight; i++) {
 			tmpI = i - blockOffset;
 			BofZ[tmpI][i] = 0;
@@ -159,7 +158,7 @@ public class CalcBCMapTask implements MapTask {
 	 */
 	public void configure(JobConf jobConf, MapperConf mapConf)
 			throws TwisterException {
-		
+        sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
 		String weightPrefix = jobConf.getProperty("WeightPrefix");
@@ -192,7 +191,7 @@ public class CalcBCMapTask implements MapTask {
 		//System.out.println(mapConf.getMapTaskNo() + " " + fileName);
 		try {
 			deltaMatData.loadDeltaFromBinFile(fileName);
-            weights = DAMDS2.sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
+            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
                     deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
                     deltaMatData.getWidth());
 		} catch (Exception e) {
