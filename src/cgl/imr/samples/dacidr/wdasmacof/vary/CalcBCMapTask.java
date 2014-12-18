@@ -27,6 +27,7 @@ import java.io.IOException;
 
 public class CalcBCMapTask implements MapTask {
     private boolean sammonMapping = false;
+    private double averageOriginalDistance = 0.0;
 	int mapNo = 0;
 	private int bz = 0; // this is to hold the block size of the block matrix
 	private int N = 0;
@@ -159,6 +160,7 @@ public class CalcBCMapTask implements MapTask {
 	public void configure(JobConf jobConf, MapperConf mapConf)
 			throws TwisterException {
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
+        averageOriginalDistance = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_AVG_D));
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
 		String weightPrefix = jobConf.getProperty("WeightPrefix");
@@ -191,7 +193,7 @@ public class CalcBCMapTask implements MapTask {
 		//System.out.println(mapConf.getMapTaskNo() + " " + fileName);
 		try {
 			deltaMatData.loadDeltaFromBinFile(fileName);
-            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
+            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, averageOriginalDistance, deltaMatData.getHeight(),
                     deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
                     deltaMatData.getWidth());
 		} catch (Exception e) {

@@ -14,6 +14,7 @@ import java.io.IOException;
 public class MatrixMultiplyMapTask implements MapTask{
 
     private boolean sammonMapping = false;
+    private double averageOriginalDistance = 0.0;
 	JobConf jobConf;
 	short[][] weights;
 	int rowOffset;
@@ -36,6 +37,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 		
 		MDSShortMatrixData deltaMatData = null;
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
+        averageOriginalDistance = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_AVG_D));
         String inputFolder = jobConf.getProperty("InputFolder");
         String inputPrefix = jobConf.getProperty("InputPrefix");
 		String weightPrefix = jobConf.getProperty("WeightPrefix");
@@ -67,7 +69,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 		
 		try {
             deltaMatData.loadDeltaFromBinFile(fileName);
-            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, DAMDS2.avgOrigDistance, deltaMatData.getHeight(),
+            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, averageOriginalDistance, deltaMatData.getHeight(),
                     deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
                     deltaMatData.getWidth());
             double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;

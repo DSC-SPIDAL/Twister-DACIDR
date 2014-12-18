@@ -35,6 +35,7 @@ public class DAMDS2 {
 	public static String PROP_D = "prop_target_dim";
 	public static String PROP_ALPHA = "prop_alpha";
 	public static String PROP_SAMMON = "prop_sammon";
+	public static String PROP_AVG_D = "prop_avg_d";
 	private static double SEQUENTIAL_TIME = 0;
 	
 	public static int BLOCK_SIZE = 64;
@@ -123,7 +124,7 @@ public class DAMDS2 {
 		System.out.println("[12. Final Weight Prefix]:\t" + finalWeightPrefix);
 		System.out.println("[13. CG Iterations]:\t" + CG_ITER);
 		System.out.println("[14. CG Threshold]:\t" + CG_THRESHOLD);
-                System.out.println("[15. Sammon mapping]:\t" +sammonMapping);
+        System.out.println("[15. Sammon mapping]:\t" +sammonMapping);
 		
 		try {
 			performInitialCalculations(numMapTasks, inputFolder, inputPrefix, 
@@ -419,6 +420,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_TCUR, String.valueOf(tCur));
 		jobConf.addProperty(PROP_D, String.valueOf(D));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
+        jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
 		jobConf.addProperty("WeightPrefix", weightPrefix);
@@ -478,6 +480,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_BZ, String.valueOf(BLOCK_SIZE));
 		jobConf.addProperty(PROP_N, String.valueOf(N));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
+        jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
 		jobConf.addProperty("WeightPrefix", weightPrefix);
@@ -545,6 +548,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_TCUR, String.valueOf(tCur));
 		jobConf.addProperty(PROP_D, String.valueOf(D));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
+        jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
 		jobConf.addProperty("WeightPrefix", weightPrefix);

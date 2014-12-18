@@ -53,7 +53,7 @@ public class FileOperation {
         short[][] weights = new short[row][col];
         for(int i = 0; i < row; ++i)
             for(int j = 0; j < col; ++j)
-                weights[i][j] = (short)((1.0/Math.max(originalDistances[i][j], 0.001 * originalMeanDistance)) * Short.MAX_VALUE);
+                weights[i][j] = (short)((1.0/Math.max(originalDistances[i][j]*1.0/Short.MAX_VALUE, 0.001 * originalMeanDistance)) * Short.MAX_VALUE);
         return weights;
     }
 }

@@ -27,6 +27,7 @@ import java.io.IOException;
 public class StressMapTask implements MapTask {
 
     private boolean sammonMapping = false;
+    private double averageOriginalDistance = 0.0;
 	private double tCur = 0.0;
 	private int targetDim = 3;
 	private int rowHeight;
@@ -47,6 +48,7 @@ public class StressMapTask implements MapTask {
 		targetDim = Integer.parseInt(jobConf.getProperty(DAMDS2.PROP_D));
 
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
+        averageOriginalDistance = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_AVG_D));
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
 		String weightPrefix = jobConf.getProperty("WeightPrefix");
@@ -77,7 +79,7 @@ public class StressMapTask implements MapTask {
 
 		try {
 			deltaBlock.loadDeltaFromBinFile(fileName);
-            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaBlock.data, DAMDS2.avgOrigDistance,
+            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaBlock.data, averageOriginalDistance,
                     deltaBlock.getHeight(),
                     deltaBlock.getWidth()) : FileOperation.loadWeights(weightName, deltaBlock.getHeight(),
                     deltaBlock.getWidth());
