@@ -101,10 +101,13 @@ public class MatrixMultiplyMapTask implements MapTask{
 				jobConf.getJobId(), memCacheKey.toString()));
 		double[][] X = mData.getData();
 
-        double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		// Next we can calculate the BofZ * preX.
-		X = MatrixUtils.matrixMultiply(weights, weightMultiply, V, X, blockHeight,
-				X[0].length, N, bz, rowOffset);
+
+		X = sammonMapping ?
+				MatrixUtils.matrixMultiply((i, j) ->
+						1.0 / Math.max(deltaBlock[i][j] * 1.0 / Short.MAX_VALUE, 0.001 * averageOriginalDistance),
+						V, X, blockHeight, X[0].length, N, bz, rowOffset)
+				: MatrixUtils.matrixMultiply(weights, V, X, blockHeight, X[0].length, N, bz, rowOffset);
 
 		// Send C with the map task number to a reduce task. Which will simply
 		// combine these parts and form the N x d matrix.
