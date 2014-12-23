@@ -79,11 +79,12 @@ public class StressMapTask implements MapTask {
 
 		try {
 			deltaBlock.loadDeltaFromBinFile(fileName);
-            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaBlock.data, averageOriginalDistance,
-                    deltaBlock.getHeight(),
-                    deltaBlock.getWidth()) : FileOperation.loadWeights(weightName, deltaBlock.getHeight(),
-                    deltaBlock.getWidth());
-	
+			// In Sammon mode we'll compute weights when needed
+			// hence the reason not load weights for Sammon.
+			if (!sammonMapping){
+				weights = FileOperation.loadWeights(weightName, deltaBlock.getHeight(),deltaBlock.getWidth());
+			}
+
 			
 			rowHeight = deltaBlock.getHeight();
 			N = deltaBlock.getWidth();
@@ -119,11 +120,11 @@ public class StressMapTask implements MapTask {
 		if (tCur > 10E-10) {
 			diff = Math.sqrt(2.0 * targetDim) * tCur;
 		}
-        double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		for (int i = rowOffset; i < rowOffset + rowHeight; i++) {
 			tmpI = i - rowOffset;
 			for (int j = 0; j < N; j++) {
-                double weight = weights[tmpI][j] * weightMultiply;
+				double origD = deltaMatData[tmpI][j]*1.0 / Short.MAX_VALUE;
+                double weight = sammonMapping ? 1.0 / Math.max(origD, 0.001 * averageOriginalDistance) : weights[tmpI][j];
                 if(weight != 0){
 					double dist;
 					if (j != i) {
@@ -131,7 +132,6 @@ public class StressMapTask implements MapTask {
 					} else {
 						dist = 0;
 					}
-					double origD = deltaMatData[tmpI][j] / (double)Short.MAX_VALUE;
 					double heatDist = origD - diff;
 					double d = origD >= diff 
 								? heatDist - dist : 0;

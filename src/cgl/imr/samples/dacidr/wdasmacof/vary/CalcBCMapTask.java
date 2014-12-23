@@ -90,7 +90,6 @@ public class CalcBCMapTask implements MapTask {
 		if (tCur > 10E-10) {
 			diff = Math.sqrt(2.0 * targetDim)  * tCur;
 		}
-        double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
 		for (int i = blockOffset; i < blockOffset + blockHeight; i++) {
 			tmpI = i - blockOffset;
 			BofZ[tmpI][i] = 0;
@@ -107,10 +106,10 @@ public class CalcBCMapTask implements MapTask {
 				// this is for the i!=j case. For i==j case will be calculated
 				// separately.
 				if (i != j) {
-                    double weight = weights[tmpI][j] * weightMultiply;
-                    if(weight != 0){
+					double origD = deltaBlock[tmpI][j] / (double)Short.MAX_VALUE;
+					double weight = sammonMapping ? 1.0/Math.max(origD, 0.001 * averageOriginalDistance) : weights[tmpI][j];
+					if(weight != 0){
 						double dist = calculateDistance(preX, preX[0].length, i, j);
-						double origD = deltaBlock[tmpI][j] / (double)Short.MAX_VALUE;
 						if (dist >= 1.0E-10 && diff < origD) {
 							BofZ[tmpI][j] = (float) (weight * vBlockValue * (origD - diff) / dist);
 						} else {
@@ -193,9 +192,12 @@ public class CalcBCMapTask implements MapTask {
 		//System.out.println(mapConf.getMapTaskNo() + " " + fileName);
 		try {
 			deltaMatData.loadDeltaFromBinFile(fileName);
-            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, averageOriginalDistance, deltaMatData.getHeight(),
-                    deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
-                    deltaMatData.getWidth());
+			// In Sammon mode we'll compute weights when needed
+			// hence the reason not load weights for Sammon.
+            if (!sammonMapping) {
+				weights = FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
+						deltaMatData.getWidth());
+			}
 		} catch (Exception e) {
 			throw new TwisterException(e);
 		}			

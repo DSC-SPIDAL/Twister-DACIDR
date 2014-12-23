@@ -60,13 +60,11 @@ public class AvgOrigDistanceMapTask implements MapTask {
 			rowData.loadDeltaFromBinFile(fileName);
             // The weights are used in this map-reduce stage only to decide if a distance value
             // should be considered (non zero weight) or not (zero weight).
-            // In Sammon mode we'll give non zero weights for all distances,
-            // hence the dummy mean value of 1 loading Sammon weights for this map task.
-            // In other map-reduce stages that follow this we'll load Sammon weights with correct
-            // mean value that we find in this map-reduce stage
-            weights = sammonMapping ? FileOperation.loadSammonWeights(rowData.data, 1, rowData.getHeight(),
-                    rowData.getWidth()) : FileOperation.loadWeights(weightName, rowData.getHeight(),
-                    rowData.getWidth());
+            // In Sammon mode we'll consider all distances,
+            // hence the reason not load weights for Sammon.
+            if (!sammonMapping){
+				weights = FileOperation.loadWeights(weightName, rowData.getHeight(), rowData.getWidth());
+			}
         } catch (Exception e) {
 			throw new TwisterException(e);
 		}
@@ -84,7 +82,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				if(weights[i][j] != 0){
+				if(sammonMapping || weights[i][j] != 0){
 					double realD = data[i][j] / (double) Short.MAX_VALUE;
 					average += realD;
 					avgSquare += (realD * realD);

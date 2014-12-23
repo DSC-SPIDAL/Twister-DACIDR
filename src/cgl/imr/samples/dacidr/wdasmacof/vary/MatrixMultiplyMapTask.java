@@ -16,6 +16,7 @@ public class MatrixMultiplyMapTask implements MapTask{
     private boolean sammonMapping = false;
     private double averageOriginalDistance = 0.0;
 	JobConf jobConf;
+	private short[][] deltaBlock = null;
 	short[][] weights;
 	int rowOffset;
 	int blockHeight;
@@ -62,33 +63,33 @@ public class MatrixMultiplyMapTask implements MapTask{
 				}
 			}
 			br.close();
-		}
-		catch(IOException e){
-			e.printStackTrace();
-		}
-		
-		try {
-            deltaMatData.loadDeltaFromBinFile(fileName);
-            weights = sammonMapping ? FileOperation.loadSammonWeights(deltaMatData.data, averageOriginalDistance, deltaMatData.getHeight(),
-                    deltaMatData.getWidth()) : FileOperation.loadWeights(weightName, deltaMatData.getHeight(),
-                    deltaMatData.getWidth());
-            double weightMultiply = sammonMapping ? 1.0/Short.MAX_VALUE : 1.0;
+
+            deltaBlock = deltaMatData.loadDeltaFromBinFile(fileName);
+			// In Sammon mode we'll compute weights when needed
+			// hence the reason not load weights for Sammon.
+			if (!sammonMapping){
+				weights = FileOperation.loadWeights(weightName, deltaMatData.getHeight(),deltaMatData.getWidth());
+			}
 			V = new double[deltaMatData.getHeight()];
 			for (int i = 0; i < deltaMatData.getHeight(); ++i) {
 				for (int j = 0; j < deltaMatData.getWidth(); ++j) {
-					if (i + deltaMatData.getRowOffset() != j)
-						V[i] += weights[i][j]*weightMultiply;
+					if (i + deltaMatData.getRowOffset() != j) {
+						double origD = deltaBlock[i][j]*1.0/Short.MAX_VALUE;
+						double weight = sammonMapping ? 1.0 / Math.max(origD, 0.001 * averageOriginalDistance) : weights[i][j];
+						V[i] += weight;
+					}
 				}
 				V[i] += 1;
 			}
+
+			rowOffset = deltaMatData.getRowOffset();
+			blockHeight = deltaMatData.getHeight();
+			N = deltaMatData.getWidth();
+			bz = Integer.parseInt(jobConf.getProperty(DAMDS2.PROP_BZ));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		rowOffset = deltaMatData.getRowOffset();
-		blockHeight = deltaMatData.getHeight();
-		N = deltaMatData.getWidth();
-		bz = Integer.parseInt(jobConf.getProperty(DAMDS2.PROP_BZ));
+
 	}
 
 	@Override
