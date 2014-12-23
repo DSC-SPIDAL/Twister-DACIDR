@@ -266,6 +266,8 @@ public class DAMDS2 {
 		
 		int cgCount = 0;
 		double rTr = innerProductCalculation(r);
+		// Adding relative value test for termination as suggested by Dr. Fox.
+		double testEnd = rTr * CG_THRESHOLD;
 
 		//System.out.println("1");
 		while(cgCount < CG_ITER){
@@ -283,7 +285,7 @@ public class DAMDS2 {
 				for(int j = 0; j < D; ++j)
 					X[i][j] += alpha * p[i][j];
 
-			if (rTr < CG_THRESHOLD) {
+			if (rTr < testEnd) {
 				break;
 			}
 			
@@ -304,6 +306,7 @@ public class DAMDS2 {
 
 			
 		}
+		System.out.println("CGCount: " + cgCount + " TestEnd: " + testEnd + " rTr: " + rTr);
 		return X;
 	}
 	
