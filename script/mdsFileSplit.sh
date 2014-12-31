@@ -65,6 +65,6 @@ done
 
 
 #echo $cp
-java -Xmx6000m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.dacidr.wdasmacof.vary.MDSShortDataSplit $1 $2 $3 $4 $5 $6 $7 $8
+java -Xmx6000m -Xms512m -XX:SurvivorRatio=10 -classpath $cp cgl.imr.samples.dacidr.wdasmacof.vary.MDSShortDataSplit $1 $2 $3 $4 $5 $6 $7 $8 $9
 
 

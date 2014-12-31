@@ -3,16 +3,9 @@ package cgl.imr.samples.dacidr.wdasmacof.vary;
 /*
  * @author Yang Ruan(yangruan@indiana.edu)
  */
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.google.common.io.LittleEndianDataInputStream;
+
+import java.io.*;
 
 public class MDSShortDataSplit {
 	public static void main(String[] args) {
@@ -26,6 +19,7 @@ public class MDSShortDataSplit {
 			System.out.println("[6. row size ]");
 			System.out.println("[7. column size]");
 			System.out.println("[8. Type of input value format (0: short; 1: double)]");
+			System.out.println("[9. IsBigEndian (true: java style; false: c# style)]");
 			System.exit(0);
 		}
 		double beginTime = System.currentTimeMillis();
@@ -38,6 +32,7 @@ public class MDSShortDataSplit {
 		int row = Integer.valueOf(args[5]);
 		int col = Integer.valueOf(args[6]);
 		int choice = Integer.parseInt(args[7]);
+		boolean isBigEndian = Boolean.parseBoolean(args[8]);
 
 		// Create a temporary directory to hold data splits.
 		if (!(new File(tmpDir)).exists()) {
@@ -49,9 +44,9 @@ public class MDSShortDataSplit {
 		}
 		try {
 			if(choice == 0)
-				splitDataforShort(dataFile, tmpDir, tmpFilePrefix, idsFile, numMapTasks, row, col);
+				splitDataforShort(dataFile, tmpDir, tmpFilePrefix, idsFile, numMapTasks, row, col, isBigEndian);
 			else if (choice == 1)
-				splitDataforDouble(dataFile, tmpDir, tmpFilePrefix, idsFile, numMapTasks, row, col);
+				splitDataforDouble(dataFile, tmpDir, tmpFilePrefix, idsFile, numMapTasks, row, col, isBigEndian);
 			else{
 				System.err.println("The choice must be 1 or 0");
 				System.exit(2);
@@ -71,11 +66,11 @@ public class MDSShortDataSplit {
 	}
 
 	private static void splitDataforDouble(String dataFile, String tmpDir,
-			String tmpFilePrefix, String idsFile, int numMapTasks, int row, int col)
+			String tmpFilePrefix, String idsFile, int numMapTasks, int row, int col, boolean isBigEndian)
 			throws IOException {
 		BufferedInputStream reader = new BufferedInputStream(new FileInputStream(
 				dataFile));
-		DataInputStream din = new DataInputStream(reader);
+		DataInput din = isBigEndian ? new DataInputStream(reader) : new LittleEndianDataInputStream(reader);
 		BufferedWriter idsWriter = new BufferedWriter(new FileWriter(idsFile));
 
 		String outputFile = null;
@@ -111,7 +106,11 @@ public class MDSShortDataSplit {
 			idsWriter.write(curHeight + "\t" + col + "\t" + i + "\t" + start + "\n");
 			start = end;
 		}
-		din.close();
+		if (isBigEndian){
+			((DataInputStream)din).close();
+		} else {
+			((LittleEndianDataInputStream)din).close();
+		}
 		idsWriter.close();
 	}
 	
@@ -144,16 +143,15 @@ public class MDSShortDataSplit {
 	 * @param tmpFilePrefix
 	 * @param idsFile
 	 * @param numMapTasks
-	 * @param size
 	 * @throws IOException
 	 */
 	
 	private static void splitDataforShort(String dataFile, String tmpDir,
-			String tmpFilePrefix, String idsFile, int numMapTasks, int row, int col)
+			String tmpFilePrefix, String idsFile, int numMapTasks, int row, int col, boolean isBigEndian)
 			throws IOException {
 		BufferedInputStream reader = new BufferedInputStream(new FileInputStream(
 				dataFile));
-		DataInputStream din = new DataInputStream(reader);
+		DataInput din = isBigEndian ? new DataInputStream(reader) : new LittleEndianDataInputStream(reader);
 		BufferedWriter idsWriter = new BufferedWriter(new FileWriter(idsFile));
 
 		String outputFile = null;
@@ -191,7 +189,11 @@ public class MDSShortDataSplit {
 			start = end;
 			rowData.writeToBinFile(outputFile);
 		}
-		din.close();
+		if (isBigEndian){
+			((DataInputStream)din).close();
+		} else {
+			((LittleEndianDataInputStream)din).close();
+		}
 		idsWriter.close();
 	}
 }
