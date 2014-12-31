@@ -9,7 +9,7 @@ import java.io.*;
 
 public class MDSShortDataSplit {
 	public static void main(String[] args) {
-		if (args.length != 8) {
+		if (args.length != 9) {
 			System.out.println("Usage: ");
 			System.out.println("[1. Data File ]");
 			System.out.println("[2. Temporary directory to split data ]");
