@@ -68,3 +68,31 @@ Building Twister-DACIDR
     cp $DACIDR_HOME/build/twister-dacidr.jar $TWISTER_HOME/apps
   ```
 
+Starting Twister-DACIDR
+--
+A set of nodes running Twister is required to run any of the applications in Twister-DACIDR. We will assume that you already have access to some nodes and `importantly` passwordless SSH is enabled between them. Further, we assume these nodes have a shared filesystem. This is not a mandatory requirement, but otherwise it would require manual copying of files to all nodes to get Twister working properly.
+
+* We will dedicate one of the nodes, say `broker-node`, to run the ActiveMQ broker, so list all the node IPs except the `broker-node` in a file named `nodes`. Then copy this file to `$TWISTER_HOME/bin`
+* SSH to `broker-node` in a separate terminal and start the ActiveMQ broker as follows.
+  ```
+    cd $ACTIVEMQ_HOME/bin
+    ./activemq console
+  ```
+
+* Set `broker-node` IP in `$TWISTER_HOME/bin/amq.properties` file as shown below.
+  ```
+    uri=failover\:(tcp\://broker-node\:61616)
+  ```
+  
+* Configure properties in `$TWISTER_HOME/bin/twister.properties` as shown below. Change `#sockets`, `#cores`, and `path-to-TWISTER_HOME` with appropriate values. `#sockets` means the number of physical processors in a node and `#cores` means the number of cores in a processor.
+  ```
+    daemon_port=12500
+    daemons_per_node=#sockets
+    workers_per_daemon=#cores
+    pubsub_broker=ActiveMQ
+    app_dir=path-to-TWISTER_HOME/apps
+    data_dir=path-to-TWISTER_HOME/data
+    nodes_file=path-to-TWISTER_HOME/nodes
+  ```
+  
+* Set maximum memory for a Twister daemon as `total memory per node / daemons per node` in `$TWISTER_HOME/bin/stimr.sh` `-Xmx` parameter
