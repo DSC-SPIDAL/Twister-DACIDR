@@ -96,3 +96,11 @@ A set of nodes running Twister is required to run any of the applications in Twi
   ```
   
 * Set maximum memory for a Twister daemon as `total memory per node / daemons per node` in `$TWISTER_HOME/bin/stimr.sh` `-Xmx` parameter
+
+* Finally, start Twister using,
+  ```
+    cd $TWISTER_HOME/bin
+    ./start_twister.sh
+  ```
+  
+ * You can now proceed to running applications in Twister-DACIDR in a separate terminal following the README guide in this repository.
