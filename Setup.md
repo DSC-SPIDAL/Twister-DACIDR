@@ -103,4 +103,5 @@ A set of nodes running Twister is required to run any of the applications in Twi
     ./start_twister.sh
   ```
   
- * You can now proceed to running applications in Twister-DACIDR in a separate terminal following the README guide in this repository.
+
+* You can now proceed to running applications in Twister-DACIDR in a separate terminal following the README guide in this repository.
