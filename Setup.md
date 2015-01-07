@@ -48,19 +48,21 @@ Prerequisites
     export TWISTER_HOME PATH
   ```  
   
-  Building Twister-DACIDR
-  --
+Building Twister-DACIDR
+--
 * Check all prerequisites are satisfied before building dapwc
 * Clone this git repository from `git@github.com:DSC-SPIDAL/Twister-DACIDR.git` Let's call this directory `DACIDR_HOME` by exporting the following environment variable
   ```
     DACIDR_HOME=<path-to-Twister-DACIDR-git-clone>
     export DACIDR_HOME
   ```
+  
 * Once above two steps are completed, building Twister-DACIDR requires only one command, `ant`, issued within `DACIDR_HOME`.
 * Copy the jar files in `$DACIDR_HOME/lib` to `$TWISTER_HOME/lib`
   ```
     cp $DACIDR_HOME/lib/*.jar $TWISTER_HOME/lib
   ```
+  
 * Copy `$DACIDR_HOME/build/twister-dacidr.jar` to `$TWISTER_HOME/apps`
   ```
     cp $DACIDR_HOME/build/twister-dacidr.jar $TWISTER_HOME/apps
