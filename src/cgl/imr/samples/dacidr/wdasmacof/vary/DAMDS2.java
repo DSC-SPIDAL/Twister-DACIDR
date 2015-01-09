@@ -268,9 +268,7 @@ public class DAMDS2 {
 						"Label Data File", "Output File", "Threshold value", "The Target Dimension",
 						"Cooling parameter (alpha)", "Input Data Size", "Final Weight Prefix", "CG Iterations",
 						"CG Threshold", "Sammon mapping"};
-		IntStream.range(0, params.length).forEach(i -> args[i] = String.valueOf(i));
 		Optional<Integer> maxLength = Arrays.stream(params).map(String::length).reduce(Math::max);
-		Arrays.stream(params).map(String::length).forEach(System.out::println);
 		if (!maxLength.isPresent()) return;
 		final int max = maxLength.get();
 		final String prefix = "  ";
