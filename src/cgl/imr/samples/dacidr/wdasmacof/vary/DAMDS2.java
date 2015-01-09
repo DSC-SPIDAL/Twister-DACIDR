@@ -12,18 +12,20 @@ import cgl.imr.base.TwisterMonitor;
 import cgl.imr.base.impl.GenericCombiner;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.client.TwisterDriver;
+import cgl.imr.samples.dacidr.wdasmacof.utils.Ref;
 import cgl.imr.types.DoubleArray;
 import cgl.imr.types.DoubleValue;
 import cgl.imr.types.StringValue;
+import com.google.common.base.Stopwatch;
 import org.safehaus.uuid.UUIDGenerator;
 
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class DAMDS2 {
 
@@ -72,7 +74,7 @@ public class DAMDS2 {
 
 	public static void main(String[] args) {
 
-		double beginTime = System.currentTimeMillis();
+		Stopwatch mainTimer = Stopwatch.createStarted();
 
 		if (args.length != 15) {
 			System.out.println("Usage: ");
@@ -110,21 +112,12 @@ public class DAMDS2 {
 		CG_THRESHOLD = Double.parseDouble(args[13]);
         sammonMapping = Boolean.parseBoolean(args[14]);
 
-		System.out.println("[1. Num map tasks ]:\t" + numMapTasks);
-		System.out.println("[2. Input Folder]:\t" + inputFolder);
-		System.out.println("[3. Input File Prefix]:\t" + inputPrefix);
-		System.out.println("[4. Weighted File Prefix]:\t" + weightPrefix);
-		System.out.println("[5. IDs File ]:\t" + idsFile);
-		System.out.println("[6. Label Data File ]:\t" + labelsFile);
-		System.out.println("[7. Output File ]:\t" + outputFile);
-		System.out.println("[8. Threshold value ]:\t" + threshold);
-		System.out.println("[9. The Target Dimension ]:\t" + D);
-		System.out.println("[10. Cooling parameter (alpha) ]:\t" + alpha);
-		System.out.println("[11. Input Data Size]:\t" + N);
-		System.out.println("[12. Final Weight Prefix]:\t" + finalWeightPrefix);
-		System.out.println("[13. CG Iterations]:\t" + CG_ITER);
-		System.out.println("[14. CG Threshold]:\t" + CG_THRESHOLD);
-        System.out.println("[15. Sammon mapping]:\t" +sammonMapping);
+		System.out.println("== DAMDS run started on " + new Date() + " ==");
+		printParameters(true, String.valueOf(numMapTasks), inputFolder, inputPrefix, weightPrefix, idsFile, labelsFile,
+						outputFile, String.valueOf(threshold), String.valueOf(D), String.valueOf(alpha),
+						String.valueOf(N), String.valueOf(finalWeightPrefix), String.valueOf(CG_ITER),
+						String.valueOf(CG_THRESHOLD), String.valueOf(sammonMapping));
+
 		
 		try {
 			performInitialCalculations(numMapTasks, inputFolder, inputPrefix, 
@@ -144,7 +137,6 @@ public class DAMDS2 {
 			System.out.println("Initial Stress: " + preStress);
 
 			double diffStress = 10 * threshold;  //starting value
-			int iter = 0;
 
 			double X[][] = null;
 			double BC[][] = null;
@@ -166,40 +158,43 @@ public class DAMDS2 {
 			tMax = calculateMaxT(maxOrigDistance, D);
 			tMin = (0.01 * tMax < 0.01) ? 0.01 * tMax : 0.01;
 			tCur = alpha * tMax;
-			
-			double endTime = System.currentTimeMillis();
-			System.out.println("Upto the loop took =" + (endTime - beginTime)
-					/ 1000 + " Seconds.");
 
-			iter = 0;
-			
+			mainTimer.stop();
+			System.out.println("Up to the loop took =" + mainTimer.elapsed(TimeUnit.SECONDS) + " seconds");
+			mainTimer.start();
+
+			Stopwatch loopTimer = Stopwatch.createStarted();
+			int loopCount = 0;
+
 			while (true) {
 				preStress = calculateStress(stressDriver, preX, numMapTasks);
 				diffStress = threshold + 1.0;
-				
-				System.out.println("###############################");
-				System.out.printf("# T_Cur = %.10g\n", tCur);
-				System.out.println("###############################");
-				
+
+				System.out.printf("\nStart of loop %d Temperature (T_Cur) %.4g", loopCount, tCur);
+
+				int iterationCount = 0;
+				Ref<Integer> cgCount = new Ref<>(0);
 				while ( diffStress >= threshold ) {
 					BC = calculateBC(bcDriver, preX);
-					
-					X = conjugateGradient(mmDriver, BC, preX);
+
+					X = conjugateGradient(mmDriver, BC, preX, cgCount);
 					
 					stress = calculateStress(stressDriver, X, numMapTasks);
 					diffStress = preStress - stress;
 					preStress = stress;
 					preX = MatrixUtils.copy(X);
 
-					iter++;
-					
-					if ((iter % 10 == 0) || (iter >= MAX_ITER)) {
-						System.out.println("Iteration ## " + iter + " completed. " + threshold + " " + diffStress + " " + stress);
+
+					++iterationCount;
+					if ((iterationCount-1 % 9 == 0) || (iterationCount >= MAX_ITER)) {
+						System.out.printf("  Loop %d Iteration %d Avg CG count %.4g Stress %.4g\n", loopCount,
+										  iterationCount, (cgCount.getValue() * 1.0 / iterationCount), stress);
 					}
 					++SMACOF_REAL_ITER;
 				}
-				
-				System.out.println("Iteration ## " + iter + " completed. " + threshold + " " + diffStress + " " + stress);
+
+				System.out.printf("End of loop %d  Iterations %d. Avg CG count %.4g Stress %.4g Diff. Stress %4g Threshold %4g\n", loopCount, iterationCount,
+								  (cgCount.getValue() * 1.0 / iterationCount), stress, diffStress, threshold);
 				System.out.println();
 				
 				if (tCur == 0)
@@ -207,16 +202,15 @@ public class DAMDS2 {
 				tCur *= alpha;
 				if (tCur < tMin)
 					tCur = 0;
-				iter = 0;
+				++loopCount;
 			}
+			loopTimer.stop();
 			
 			QoR1 = stress / (N * (N - 1) / 2);
 			QoR2 = QoR1 / (avgOrigDist * avgOrigDist);
 
-			System.out.println("Normalize1 = " + QoR1 + " Normalize2 = " + QoR2);
-			System.out.println("Average of Delta(original distance) = "	+ avgOrigDist);
-
-			endTime = System.currentTimeMillis();
+			System.out.printf("Normalize1 = %.4g Normalize2 = %.4g\n", QoR1, QoR2);
+			System.out.printf("Average of Delta(original distance) = %.4g\n", avgOrigDist);
 
 			if (labelsFile.endsWith("NoLabel")) {
 				writeOuput(X, outputFile);
@@ -233,14 +227,19 @@ public class DAMDS2 {
 
 			Double finalStress = calculateStress(finalStressDriver, X, numMapTasks);
 
-			System.out
-					.println("===================================================");
-			System.out.println("CG REAL ITER:" + CG_REAL_ITER);
-			System.out.println("SMACOF REAL ITER: " + SMACOF_REAL_ITER);
-			System.out.println("For CG iter: " + CG_REAL_ITER / SMACOF_REAL_ITER + "\tFinal Result is:\t" + finalStress + "\t" + (endTime - beginTime) / 1000);
-			System.out.println("Sequential Computation Time: " + SEQUENTIAL_TIME);
-			System.out
-					.println("===================================================");
+			mainTimer.stop();
+
+
+			System.out.println("Finishing DAMDS run ...");
+			long totalTime = mainTimer.elapsed(TimeUnit.MILLISECONDS);
+			long loopTime = loopTimer.elapsed(TimeUnit.MILLISECONDS);
+			System.out.printf("  Total Time: %s (%d ms) Loop Time: %s (%d ms)", formatElapsedMillis(totalTime), totalTime, formatElapsedMillis(loopTime), loopTime);
+			System.out.println("  Total Loops: " + loopCount);
+			System.out.println("  Total Iterations: " + SMACOF_REAL_ITER);
+			System.out.printf("  Total CG Iterations: %d Avg. CG Iterations: %.4g\n", (int) CG_REAL_ITER,
+							  CG_REAL_ITER / SMACOF_REAL_ITER);
+			System.out.println("  Final Stress:\t" + finalStress);
+			System.out.println("== DAMDS run completed on " + new Date() + " ==");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -248,9 +247,55 @@ public class DAMDS2 {
 		}
 		System.exit(0);
 	}
-	
+
+	public static String formatElapsedMillis(long elapsed){
+		String format = "%dd:%02dH:%02dM:%02dS:%03dmS";
+		short millis = (short)(elapsed % (1000.0));
+		elapsed = (elapsed - millis) / 1000; // remaining elapsed in seconds
+		byte seconds = (byte)(elapsed % 60.0);
+		elapsed = (elapsed - seconds) / 60; // remaining elapsed in minutes
+		byte minutes =  (byte)(elapsed % 60.0);
+		elapsed = (elapsed - minutes) / 60; // remaining elapsed in hours
+		byte hours = (byte)(elapsed % 24.0);
+		long days = (elapsed - hours) / 24; // remaining elapsed in days
+		return String.format(format, days, hours, minutes,  seconds, millis);
+	}
+
+	private static void printParameters(boolean centerAligned, String ... args) {
+		System.out.println("Parameters...");
+		String[] params =
+				new String[]{"Num map tasks", "Input Folder", "Input File Prefix", "Weighted File Prefix", "IDs File",
+						"Label Data File", "Output File", "Threshold value", "The Target Dimension",
+						"Cooling parameter (alpha)", "Input Data Size", "Final Weight Prefix", "CG Iterations",
+						"CG Threshold", "Sammon mapping"};
+		IntStream.range(0, params.length).forEach(i -> args[i] = String.valueOf(i));
+		Optional<Integer> maxLength = Arrays.stream(params).map(String::length).reduce(Math::max);
+		Arrays.stream(params).map(String::length).forEach(System.out::println);
+		if (!maxLength.isPresent()) return;
+		final int max = maxLength.get();
+		final String prefix = "  ";
+		if (centerAligned) {
+			IntStream.range(0, params.length).forEach(i -> {
+				String param = params[i];
+				System.out.println(getPadding(max - param.length(), prefix) + param + ": " + args[i]);
+			});
+		} else {
+			IntStream.range(0, params.length).forEach(i -> {
+				String param = params[i];
+				System.out.println(prefix + param + ":" + getPadding(max - param.length(), "") + args[i]);
+			});
+		}
+	}
+
+	public static String getPadding(int count, String prefix){
+		StringBuilder sb = new StringBuilder(prefix);
+		IntStream.range(0,count).forEach(i -> sb.append(" "));
+		return sb.toString();
+	}
+
+
 	private static double[][] conjugateGradient(TwisterModel mmDriver, 
-			double[][] BC, double[][] preX) throws TwisterException{
+			double[][] BC, double[][] preX, Ref<Integer> outCgCount) throws TwisterException{
 		double[][] X = null;
 		double[][] r = new double[N][D];
 		double[][] p = new double[N][D];
@@ -306,7 +351,8 @@ public class DAMDS2 {
 
 			
 		}
-		System.out.println("CGCount: " + cgCount + " TestEnd: " + testEnd + " rTr: " + rTr);
+		outCgCount.setValue(outCgCount.getValue() + cgCount);
+//		System.out.println("CGCount: " + cgCount + " TestEnd: " + testEnd + " rTr: " + rTr);
 		return X;
 	}
 	
