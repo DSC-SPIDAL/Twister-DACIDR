@@ -170,7 +170,7 @@ public class DAMDS2 {
 				preStress = calculateStress(stressDriver, preX, numMapTasks);
 				diffStress = threshold + 1.0;
 
-				System.out.printf("\nStart of loop %d Temperature (T_Cur) %.4g", loopCount, tCur);
+				System.out.printf("\nStart of loop %d Temperature (T_Cur) %.4g\n", loopCount, tCur);
 
 				int iterationCount = 0;
 				Ref<Integer> cgCount = new Ref<>(0);
