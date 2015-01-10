@@ -131,9 +131,9 @@ public class DAMDS2 {
 
 			TwisterModel stressDriver = configureCalculateStress(numMapTasks,
 					inputFolder, inputPrefix, weightPrefix, idsFile);
-			Double stress = null;
+			double stress = -1.0;
 
-			Double preStress = calculateStress(stressDriver, preX, numMapTasks);
+			double preStress = calculateStress(stressDriver, preX, numMapTasks);
 			System.out.println("Initial Stress: " + preStress);
 
 			double diffStress = 10 * threshold;  //starting value
@@ -160,19 +160,19 @@ public class DAMDS2 {
 			tCur = alpha * tMax;
 
 			mainTimer.stop();
-			System.out.println("Up to the loop took =" + mainTimer.elapsed(TimeUnit.SECONDS) + " seconds");
+			System.out.println("Up to the loop took = " + mainTimer.elapsed(TimeUnit.SECONDS) + " seconds");
 			mainTimer.start();
 
 			Stopwatch loopTimer = Stopwatch.createStarted();
-			int loopCount = 0;
+			int loopNum = 0;
 
 			while (true) {
 				preStress = calculateStress(stressDriver, preX, numMapTasks);
 				diffStress = threshold + 1.0;
 
-				System.out.printf("\nStart of loop %d Temperature (T_Cur) %.4g\n", loopCount, tCur);
+				System.out.printf("\nStart of loop %d Temperature (T_Cur) %.5g\n", loopNum, tCur);
 
-				int iterationCount = 0;
+				int itrNum = 0;
 				Ref<Integer> cgCount = new Ref<>(0);
 				while ( diffStress >= threshold ) {
 					BC = calculateBC(bcDriver, preX);
@@ -185,32 +185,36 @@ public class DAMDS2 {
 					preX = MatrixUtils.copy(X);
 
 
-					++iterationCount;
-					if ((iterationCount-1 % 9 == 0) || (iterationCount >= MAX_ITER)) {
-						System.out.printf("  Loop %d Iteration %d Avg CG count %.4g Stress %.4g\n", loopCount,
-										  iterationCount, (cgCount.getValue() * 1.0 / iterationCount), stress);
+					
+					if ((itrNum % 10 == 0) || (itrNum >= MAX_ITER)) {
+						System.out.printf("  Loop %d Iteration %d Avg CG count %.5g Stress %.5g\n", loopNum,
+										  itrNum, (cgCount.getValue() * 1.0 / (itrNum+1)), stress);
 					}
+					++itrNum;
 					++SMACOF_REAL_ITER;
 				}
-
-				System.out.printf("End of loop %d  Iterations %d. Avg CG count %.4g Stress %.4g Diff. Stress %4g Threshold %4g\n", loopCount, iterationCount,
-								  (cgCount.getValue() * 1.0 / iterationCount), stress, diffStress, threshold);
-				System.out.println();
+				 --itrNum;
+				if (itrNum >=0 && !(itrNum % 10 == 0) && !(itrNum >= MAX_ITER)) {
+					System.out.printf("  Loop %d Iteration %d Avg CG count %.5g Stress %.5g\n", loopNum,
+									  itrNum, (cgCount.getValue() * 1.0 / (itrNum+1)), stress);
+				}
+				
+				System.out.printf("End of loop %d Total Iterations %d Avg CG count %.5g Stress %.5g\n", loopNum, (itrNum+1),(cgCount.getValue() * 1.0 / (itrNum+1)), stress);
 				
 				if (tCur == 0)
 					break;
 				tCur *= alpha;
 				if (tCur < tMin)
 					tCur = 0;
-				++loopCount;
+				++loopNum;
 			}
 			loopTimer.stop();
 			
 			QoR1 = stress / (N * (N - 1) / 2);
 			QoR2 = QoR1 / (avgOrigDist * avgOrigDist);
 
-			System.out.printf("Normalize1 = %.4g Normalize2 = %.4g\n", QoR1, QoR2);
-			System.out.printf("Average of Delta(original distance) = %.4g\n", avgOrigDist);
+			System.out.printf("Normalize1 = %.5g Normalize2 = %.5g\n", QoR1, QoR2);
+			System.out.printf("Average of Delta(original distance) = %.5g\n", avgOrigDist);
 
 			if (labelsFile.endsWith("NoLabel")) {
 				writeOuput(X, outputFile);
@@ -234,9 +238,9 @@ public class DAMDS2 {
 			long totalTime = mainTimer.elapsed(TimeUnit.MILLISECONDS);
 			long loopTime = loopTimer.elapsed(TimeUnit.MILLISECONDS);
 			System.out.printf("  Total Time: %s (%d ms) Loop Time: %s (%d ms)", formatElapsedMillis(totalTime), totalTime, formatElapsedMillis(loopTime), loopTime);
-			System.out.println("  Total Loops: " + loopCount);
+			System.out.println("  Total Loops: " + loopNum);
 			System.out.println("  Total Iterations: " + SMACOF_REAL_ITER);
-			System.out.printf("  Total CG Iterations: %d Avg. CG Iterations: %.4g\n", (int) CG_REAL_ITER,
+			System.out.printf("  Total CG Iterations: %d Avg. CG Iterations: %.5g\n", (int) CG_REAL_ITER,
 							  CG_REAL_ITER / SMACOF_REAL_ITER);
 			System.out.println("  Final Stress:\t" + finalStress);
 			System.out.println("== DAMDS run completed on " + new Date() + " ==");
@@ -557,7 +561,7 @@ public class DAMDS2 {
 		if (!combiner.getResults().isEmpty()) {
 			Key key = combiner.getResults().keySet().iterator().next();
 			stress = ((DoubleValue) combiner.getResults().get(key)).getVal();
-			return new Double(stress / (sumOrigDistanceSquare));
+			return stress / sumOrigDistanceSquare;
 		} else {
 			/*
 			if(status.isSuccess()){
