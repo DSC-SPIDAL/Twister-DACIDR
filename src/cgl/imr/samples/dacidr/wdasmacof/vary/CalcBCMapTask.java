@@ -27,6 +27,7 @@ import java.io.IOException;
 
 public class CalcBCMapTask implements MapTask {
     private boolean sammonMapping = false;
+	private double distanceTransform = 1.0;
     private double averageOriginalDistance = 0.0;
 	int mapNo = 0;
 	private int bz = 0; // this is to hold the block size of the block matrix
@@ -107,6 +108,7 @@ public class CalcBCMapTask implements MapTask {
 				// separately.
 				if (i != j) {
 					double origD = deltaBlock[tmpI][j] / (double)Short.MAX_VALUE;
+					origD = distanceTransform != 1.0 ? Math.pow(origD, distanceTransform) : origD;
 					double weight = sammonMapping ? 1.0/Math.max(origD, 0.001 * averageOriginalDistance) : weights[tmpI][j];
 					if(weight != 0){
 						double dist = calculateDistance(preX, preX[0].length, i, j);
@@ -159,6 +161,7 @@ public class CalcBCMapTask implements MapTask {
 	public void configure(JobConf jobConf, MapperConf mapConf)
 			throws TwisterException {
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
+		distanceTransform = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_DTRANS));
         averageOriginalDistance = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_AVG_D));
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");

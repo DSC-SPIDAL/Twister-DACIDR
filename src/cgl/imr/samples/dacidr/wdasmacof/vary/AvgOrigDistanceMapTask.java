@@ -16,6 +16,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 	MapperConf mapConf;
 	short[][] weights;
     boolean sammonMapping = false;
+	double distanceTransform = 1.0;
 
 	@Override
 	public void close() throws TwisterException {
@@ -28,6 +29,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		this.mapConf = mapConf;
 
 		sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
+		distanceTransform = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_DTRANS));
 		String idsFile = jobConf.getProperty("IdsFile");
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
@@ -84,6 +86,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 			for (int j = 0; j < width; j++) {
 				if(sammonMapping || weights[i][j] != 0){
 					double realD = data[i][j] / (double) Short.MAX_VALUE;
+					realD = distanceTransform != 1.0 ? Math.pow(realD, distanceTransform) : realD;
 					average += realD;
 					avgSquare += (realD * realD);
 

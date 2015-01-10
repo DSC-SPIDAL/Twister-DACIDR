@@ -37,6 +37,7 @@ public class DAMDS2 {
 	public static String PROP_D = "prop_target_dim";
 	public static String PROP_ALPHA = "prop_alpha";
 	public static String PROP_SAMMON = "prop_sammon";
+	public static String PROP_DTRANS = "prop_dtrans";
 	public static String PROP_AVG_D = "prop_avg_d";
 	private static double SEQUENTIAL_TIME = 0;
 	
@@ -71,12 +72,13 @@ public class DAMDS2 {
 	static double SMACOF_REAL_ITER = 0;
 	static double CG_THRESHOLD = 1;
     static boolean sammonMapping = false;
+	static double distanceTransform = 1.0;
 
 	public static void main(String[] args) {
 
 		Stopwatch mainTimer = Stopwatch.createStarted();
 
-		if (args.length != 15) {
+		if (args.length != 16) {
 			System.out.println("Usage: ");
 			System.out.println("[1. Num map tasks ]");
 			System.out.println("[2. Input Folder]");
@@ -93,6 +95,7 @@ public class DAMDS2 {
 			System.out.println("[13. CG iteration num]");
 			System.out.println("[14. CG Error Threshold]");
 			System.out.println("[15. Sammon mapping (boolean)]");
+			System.out.println("[16. Distance Transform (double)]");
 			System.exit(0);
 		}
 
@@ -111,12 +114,13 @@ public class DAMDS2 {
 		CG_ITER = Integer.parseInt(args[12]);
 		CG_THRESHOLD = Double.parseDouble(args[13]);
         sammonMapping = Boolean.parseBoolean(args[14]);
+        distanceTransform = Double.parseDouble(args[15]);
 
 		System.out.println("== DAMDS run started on " + new Date() + " ==");
 		printParameters(true, String.valueOf(numMapTasks), inputFolder, inputPrefix, weightPrefix, idsFile, labelsFile,
 						outputFile, String.valueOf(threshold), String.valueOf(D), String.valueOf(alpha),
 						String.valueOf(N), String.valueOf(finalWeightPrefix), String.valueOf(CG_ITER),
-						String.valueOf(CG_THRESHOLD), String.valueOf(sammonMapping));
+						String.valueOf(CG_THRESHOLD), String.valueOf(sammonMapping), String.valueOf(distanceTransform));
 
 		
 		try {
@@ -271,7 +275,7 @@ public class DAMDS2 {
 				new String[]{"Num map tasks", "Input Folder", "Input File Prefix", "Weighted File Prefix", "IDs File",
 						"Label Data File", "Output File", "Threshold value", "The Target Dimension",
 						"Cooling parameter (alpha)", "Input Data Size", "Final Weight Prefix", "CG Iterations",
-						"CG Threshold", "Sammon mapping"};
+						"CG Threshold", "Sammon mapping", "Distance Transform (double)"};
 		Optional<Integer> maxLength = Arrays.stream(params).map(String::length).reduce(Math::max);
 		if (!maxLength.isPresent()) return;
 		final int max = maxLength.get();
@@ -471,6 +475,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_TCUR, String.valueOf(tCur));
 		jobConf.addProperty(PROP_D, String.valueOf(D));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
+        jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
         jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
@@ -531,6 +536,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_BZ, String.valueOf(BLOCK_SIZE));
 		jobConf.addProperty(PROP_N, String.valueOf(N));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
+        jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
         jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
@@ -599,6 +605,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_TCUR, String.valueOf(tCur));
 		jobConf.addProperty(PROP_D, String.valueOf(D));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
+        jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
         jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
@@ -691,6 +698,7 @@ public class DAMDS2 {
 		jobConf.setNumReduceTasks(1);// One reducer is enough since we just
 		// summing some numbers.
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
+        jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
 		jobConf.addProperty("WeightPrefix", weightedPrefix);

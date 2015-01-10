@@ -14,6 +14,7 @@ import java.io.IOException;
 public class MatrixMultiplyMapTask implements MapTask{
 
     private boolean sammonMapping = false;
+	private double distanceTransform = 1.0;
     private double averageOriginalDistance = 0.0;
 	JobConf jobConf;
 	private short[][] deltaBlock = null;
@@ -38,6 +39,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 		
 		MDSShortMatrixData deltaMatData = null;
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
+		distanceTransform = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_DTRANS));
         averageOriginalDistance = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_AVG_D));
         String inputFolder = jobConf.getProperty("InputFolder");
         String inputPrefix = jobConf.getProperty("InputPrefix");
@@ -75,6 +77,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 				for (int j = 0; j < deltaMatData.getWidth(); ++j) {
 					if (i + deltaMatData.getRowOffset() != j) {
 						double origD = deltaBlock[i][j]*1.0/Short.MAX_VALUE;
+						origD = distanceTransform != 1.0 ? Math.pow(origD, distanceTransform) : origD;
 						double weight = sammonMapping ? 1.0 / Math.max(origD, 0.001 * averageOriginalDistance) : weights[i][j];
 						V[i] += weight;
 					}
@@ -103,11 +106,15 @@ public class MatrixMultiplyMapTask implements MapTask{
 
 		// Next we can calculate the BofZ * preX.
 
-		X = sammonMapping ?
-				MatrixUtils.matrixMultiply((i, j) ->
-						1.0 / Math.max(deltaBlock[i][j] * 1.0 / Short.MAX_VALUE, 0.001 * averageOriginalDistance),
-						V, X, blockHeight, X[0].length, N, bz, rowOffset)
-				: MatrixUtils.matrixMultiply(weights, V, X, blockHeight, X[0].length, N, bz, rowOffset);
+		X = sammonMapping ? MatrixUtils.matrixMultiply(distanceTransform != 1.0 ? (i, j) -> {
+														   double d = deltaBlock[i][j] * 1.0 / Short.MAX_VALUE;
+														   d = Math.pow(d, distanceTransform);
+														   return 1.0 / Math.max(d, 0.001 * averageOriginalDistance);
+													   } : (i, j) -> 1.0 /
+															   Math.max(deltaBlock[i][j] * 1.0 / Short.MAX_VALUE,
+																		0.001 * averageOriginalDistance), V, X,
+													   blockHeight, X[0].length, N, bz, rowOffset) :
+				MatrixUtils.matrixMultiply(weights, V, X, blockHeight, X[0].length, N, bz, rowOffset);
 
 		// Send C with the map task number to a reduce task. Which will simply
 		// combine these parts and form the N x d matrix.
