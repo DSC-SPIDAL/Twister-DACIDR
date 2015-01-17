@@ -4,8 +4,13 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class RandomWeightMatrixGenerator {
 
@@ -16,12 +21,17 @@ public class RandomWeightMatrixGenerator {
 	 */
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		if(args.length != 6){
+		if(args.length != 6 && args.length != 4){
 			System.out.println("Input: " +
 					"[output weighted matrix] [row] [col] [percentage][symmetric (0:no; 1:yes)][weight value]");
+			System.out.println("\nor\n");
+			System.out.println("Input: [output dir] [size] [splits] [weight value]");
 			System.exit(1);
 		}
-		
+
+		if (args.length == 4){
+			generateFastSimpleWeights(args);
+		}
 		String outputWeightMatrix = args[0];
 		int row = Integer.parseInt(args[1]);
 		int col = Integer.parseInt(args[2]);
@@ -90,5 +100,36 @@ public class RandomWeightMatrixGenerator {
 		DecimalFormat twoDForm = new DecimalFormat("#.####");
 		System.out.println("There are totally " + twoDForm.format(count / (double)row /(double) col * 100.0) + "% is 0");
 		System.out.println("There are totally " + rowCount +" rows are all 0");	
+	}
+
+	private static void generateFastSimpleWeights(String[] args) {
+		String outDir = args[0];
+		int size = Integer.parseInt(args[1]);
+		int splits = Integer.parseInt(args[2]);
+		short weight = Short.parseShort(args[5]);
+
+		int q = size / splits;
+		int r = size % splits;
+
+		byte [] bytes =  new byte[]{(byte)((weight>>8)&0xFF),(byte)(weight&0xFF)};
+		final byte [] weightRow = new byte[size*Short.BYTES];
+		IntStream.range(0,size).parallel().forEach(i -> {
+			weightRow[2*i] = bytes[0];
+			weightRow[2*i+1] = bytes[1];
+		});
+
+		IntStream.range(0,splits).parallel().forEach(i->{
+			Path file = Paths.get(outDir, "w" + weight + "_" + i);
+			try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE_NEW))){
+				int rows = (i+1)*q + (i < r ? (i+1) : r);
+				for (int row = 0; row < rows; ++i){
+					bos.write(weightRow);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+
+
 	}
 }
