@@ -35,6 +35,7 @@ public class DAMDS2 {
 	public static String PROP_ALPHA = "prop_alpha";
 	public static String PROP_SAMMON = "prop_sammon";
 	public static String PROP_DTRANS = "prop_dtrans";
+	public static String PROP_BIGENDIAN = "prop_bigendian";
 	public static String PROP_AVG_D = "prop_avg_d";
 	private static double SEQUENTIAL_TIME = 0;
 	
@@ -71,12 +72,13 @@ public class DAMDS2 {
 	static double CG_THRESHOLD = 1;
     static boolean sammonMapping = false;
 	static double distanceTransform = 1.0;
+	static boolean bigEndian = true;
 
 	public static void main(String[] args) {
 
 		Stopwatch mainTimer = Stopwatch.createStarted();
 
-		if (args.length != 16) {
+		if (args.length != 17) {
 			System.out.println("Usage: ");
 			System.out.println("[1. Num map tasks ]");
 			System.out.println("[2. Input Folder]");
@@ -94,6 +96,7 @@ public class DAMDS2 {
 			System.out.println("[14. CG Error Threshold]");
 			System.out.println("[15. Sammon mapping (boolean)]");
 			System.out.println("[16. Distance Transform (double)]");
+			System.out.println("[17. BigEndian (boolean)]");
 			System.exit(0);
 		}
 
@@ -113,12 +116,14 @@ public class DAMDS2 {
 		CG_THRESHOLD = Double.parseDouble(args[13]);
         sammonMapping = Boolean.parseBoolean(args[14]);
         distanceTransform = Double.parseDouble(args[15]);
+        bigEndian = Boolean.parseBoolean(args[16]);
 
 		System.out.println("== DAMDS run started on " + new Date() + " ==");
 		printParameters(true, String.valueOf(numMapTasks), inputFolder, inputPrefix, weightPrefix, idsFile, labelsFile,
 						outputFile, String.valueOf(threshold), String.valueOf(D), String.valueOf(alpha),
 						String.valueOf(N), String.valueOf(finalWeightPrefix), String.valueOf(CG_ITER),
-						String.valueOf(CG_THRESHOLD), String.valueOf(sammonMapping), String.valueOf(distanceTransform));
+						String.valueOf(CG_THRESHOLD), String.valueOf(sammonMapping), String.valueOf(distanceTransform),
+						String.valueOf(bigEndian));
 
 		
 		try {
@@ -273,7 +278,7 @@ public class DAMDS2 {
 				new String[]{"Num map tasks", "Input Folder", "Input File Prefix", "Weighted File Prefix", "IDs File",
 						"Label Data File", "Output File", "Threshold value", "The Target Dimension",
 						"Cooling parameter (alpha)", "Input Data Size", "Final Weight Prefix", "CG Iterations",
-						"CG Threshold", "Sammon mapping", "Distance Transform (double)"};
+						"CG Threshold", "Sammon mapping", "Distance Transform (double)", "BigEndian (boolean)"};
 		Optional<Integer> maxLength = Arrays.stream(params).map(String::length).reduce(Math::max);
 		if (!maxLength.isPresent()) return;
 		final int max = maxLength.get();
@@ -474,6 +479,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_D, String.valueOf(D));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
         jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
+		jobConf.addProperty(PROP_BIGENDIAN, String.valueOf(bigEndian));
         jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
@@ -535,6 +541,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_N, String.valueOf(N));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
         jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
+		jobConf.addProperty(PROP_BIGENDIAN, String.valueOf(bigEndian));
         jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
@@ -604,6 +611,7 @@ public class DAMDS2 {
 		jobConf.addProperty(PROP_D, String.valueOf(D));
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
         jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
+		jobConf.addProperty(PROP_BIGENDIAN, String.valueOf(bigEndian));
         jobConf.addProperty(PROP_AVG_D, String.valueOf(avgOrigDistance));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
@@ -697,6 +705,7 @@ public class DAMDS2 {
 		// summing some numbers.
         jobConf.addProperty(PROP_SAMMON, String.valueOf(sammonMapping));
         jobConf.addProperty(PROP_DTRANS, String.valueOf(distanceTransform));
+        jobConf.addProperty(PROP_BIGENDIAN, String.valueOf(bigEndian));
 		jobConf.addProperty("InputFolder", inputFolder);
 		jobConf.addProperty("InputPrefix", inputPrefix);
 		jobConf.addProperty("WeightPrefix", weightedPrefix);
@@ -724,7 +733,9 @@ public class DAMDS2 {
 				// 	sammonMapping && distance >=0 -> Yes
 				//	else weight != 0 && distance >=0 -> yes
 				long usedPairCount = (long) combinerData[3];
-
+				long missingDistCount = (long) combinerData[4];
+				System.out.println("  Number of used pairs: " + usedPairCount);
+				System.out.println("  Missing distances percentage: " + missingDistCount*100.0/usedPairCount);
 				avgOrigDistance = avgOrigDistance/usedPairCount;
 				avgOrigDistanceSquare = sumOrigDistanceSquare / usedPairCount;
 			} else {

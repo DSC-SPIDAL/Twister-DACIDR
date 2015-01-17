@@ -52,13 +52,9 @@
 
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import com.google.common.io.LittleEndianDataInputStream;
+
+import java.io.*;
 
 public class MDSShortMatrixData {
 	public MDSShortMatrixData() {
@@ -97,35 +93,33 @@ public class MDSShortMatrixData {
 	public int getWidth() {
 		return width;
 	}
-	
+
 	/**
-	 * Loads data from a binary file. First four integer values gives the number
-	 * of rows and the number of columns to read and the row and column block
-	 * numbers. The remaining double values contains the vector data.
+	 * Loads distances stored in short format from a binary file.
+	 * The distances are arranged row after row in the binar stream
+	 * @param fileName The distance file
+	 * @param isBigEndian true for Java style binary files and false for C# style binary files
+	 * @return a 2D short array containing distances
+	 * @throws IOException
 	 */
-	public short[][] loadDeltaFromBinFile(String fileName) throws IOException {
-		//File file = new File(fileName);
-		DataInputStream dinData = new DataInputStream(
-				new BufferedInputStream(new FileInputStream(
-				fileName)));
-		
+	public short[][] loadDeltaFromBinFile(String fileName, boolean isBigEndian) throws IOException {
+		try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName))) {
+			DataInput dinData = isBigEndian ? new DataInputStream(bis) : new LittleEndianDataInputStream(bis);
 
-		if (!(height > 0 && height <= Integer.MAX_VALUE && width > 0 && width <= Integer.MAX_VALUE)) {
-			dinData.close();
-			throw new IOException("Invalid number of rows or columns.");
-		}
 
-		this.data = new short[height][width];
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				// We assume that Matrix values in binary files are stored in short value.
-				data[i][j] = dinData.readShort();
+			if (!(height > 0 && height <= Integer.MAX_VALUE && width > 0 && width <= Integer.MAX_VALUE)) {
+				throw new IOException("Invalid number of rows or columns.");
 			}
+
+			this.data = new short[height][width];
+			for (int i = 0; i < height; i++) {
+				for (int j = 0; j < width; j++) {
+					// We assume that Matrix values in binary files are stored in short value.
+					data[i][j] = dinData.readShort();
+				}
+			}
+			return this.data;
 		}
-		
-		
-		dinData.close();
-		return this.data;
 	}
 
 	public void setHeight(int height) {

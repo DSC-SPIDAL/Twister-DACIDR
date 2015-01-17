@@ -17,6 +17,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 	short[][] weights;
     boolean sammonMapping = false;
 	double distanceTransform = 1.0;
+	private boolean bigEndian = true;
 
 	@Override
 	public void close() throws TwisterException {
@@ -30,6 +31,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 
 		sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
 		distanceTransform = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_DTRANS));
+		bigEndian = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_BIGENDIAN));
 		String idsFile = jobConf.getProperty("IdsFile");
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
@@ -59,7 +61,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		}
 
 		try {
-			rowData.loadDeltaFromBinFile(fileName);
+			rowData.loadDeltaFromBinFile(fileName, bigEndian);
             // The weights are used in this map-reduce stage only to decide if a distance value
             // should be considered (non zero weight) or not (zero weight).
             // In Sammon mode we'll consider all distances,
@@ -82,6 +84,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		double avgSquare = 0;
 		double maxDelta = 0.0;
 		long pairCount = 0;
+		long missingDistCount = 0;
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
@@ -89,7 +92,10 @@ public class AvgOrigDistanceMapTask implements MapTask {
 					continue;
 				}
 				double realD = data[i][j] / (double) Short.MAX_VALUE;
-				if (realD < 0) continue; // ignore missing distances (i.e. dist < 0) irrespective of weight
+				if (realD < 0){
+					++missingDistCount;
+					continue; // ignore missing distances (i.e. dist < 0) irrespective of weight
+				}
 				realD = distanceTransform != 1.0 ? Math.pow(realD, distanceTransform) : realD;
 				average += realD;
 				avgSquare += (realD * realD);
@@ -101,11 +107,12 @@ public class AvgOrigDistanceMapTask implements MapTask {
 			}
 		}
 		//System.out.println(average);
-		double[] avgs = new double[4];
+		double[] avgs = new double[5];
 		avgs[0] = average;
 		avgs[1] = avgSquare;
 		avgs[2] = maxDelta;
 		avgs[3] = pairCount;
+		avgs[4] = missingDistCount;
 		collector
 				.collect(new StringKey("stress-key"), new DoubleArray(avgs, avgs.length));
 	}

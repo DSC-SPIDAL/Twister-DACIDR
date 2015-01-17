@@ -28,6 +28,7 @@ public class StressMapTask implements MapTask {
 
     private boolean sammonMapping = false;
 	private double distanceTransform = 1.0;
+	private boolean bigEndian = true;
     private double averageOriginalDistance = 0.0;
 	private double tCur = 0.0;
 	private int targetDim = 3;
@@ -50,6 +51,7 @@ public class StressMapTask implements MapTask {
 
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
 		distanceTransform = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_DTRANS));
+		bigEndian = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_BIGENDIAN));
         averageOriginalDistance = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_AVG_D));
 		String inputFolder = jobConf.getProperty("InputFolder");
 		String inputPrefix = jobConf.getProperty("InputPrefix");
@@ -80,7 +82,7 @@ public class StressMapTask implements MapTask {
 		}
 
 		try {
-			deltaBlock.loadDeltaFromBinFile(fileName);
+			deltaBlock.loadDeltaFromBinFile(fileName, bigEndian);
 			// In Sammon mode we'll compute weights when needed
 			// hence the reason not load weights for Sammon.
 			if (!sammonMapping){

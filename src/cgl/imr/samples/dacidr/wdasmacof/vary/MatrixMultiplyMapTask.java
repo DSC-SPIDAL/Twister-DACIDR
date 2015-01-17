@@ -15,6 +15,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 
     private boolean sammonMapping = false;
 	private double distanceTransform = 1.0;
+	private boolean bigEndian = true;
     private double averageOriginalDistance = 0.0;
 	JobConf jobConf;
 	private short[][] deltaBlock = null;
@@ -40,6 +41,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 		MDSShortMatrixData deltaMatData = null;
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
 		distanceTransform = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_DTRANS));
+		bigEndian = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_BIGENDIAN));
         averageOriginalDistance = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_AVG_D));
         String inputFolder = jobConf.getProperty("InputFolder");
         String inputPrefix = jobConf.getProperty("InputPrefix");
@@ -66,7 +68,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 			}
 			br.close();
 
-            deltaBlock = deltaMatData.loadDeltaFromBinFile(fileName);
+            deltaBlock = deltaMatData.loadDeltaFromBinFile(fileName, bigEndian);
 			// In Sammon mode we'll compute weights when needed
 			// hence the reason not load weights for Sammon.
 			if (!sammonMapping){
