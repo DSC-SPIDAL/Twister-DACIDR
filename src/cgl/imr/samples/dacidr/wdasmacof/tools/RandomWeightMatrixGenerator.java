@@ -106,7 +106,7 @@ public class RandomWeightMatrixGenerator {
 		String outDir = args[0];
 		int size = Integer.parseInt(args[1]);
 		int splits = Integer.parseInt(args[2]);
-		short weight = Short.parseShort(args[5]);
+		short weight = Short.parseShort(args[3]);
 
 		int q = size / splits;
 		int r = size % splits;
