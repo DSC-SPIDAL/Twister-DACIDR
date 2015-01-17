@@ -118,11 +118,21 @@ public class RandomWeightMatrixGenerator {
 			weightRow[2*i+1] = bytes[1];
 		});
 
+//		Path file = Paths.get(outDir, "w" + weight + "_" + 0);
+//		try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE_NEW))){
+//			int rows = q + (r > 0 ? 1 : 0);
+//			for (int row = 0; row < rows; ++i){
+//				bos.write(weightRow);
+//			}
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+
 		IntStream.range(0,splits).parallel().forEach(i->{
 			Path file = Paths.get(outDir, "w" + weight + "_" + i);
 			try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE_NEW))){
 				int rows = (i+1)*q + (i < r ? (i+1) : r);
-				for (int row = 0; row < rows; ++i){
+				for (int row = 0; row < rows; ++row){
 					bos.write(weightRow);
 				}
 			} catch (IOException e) {
