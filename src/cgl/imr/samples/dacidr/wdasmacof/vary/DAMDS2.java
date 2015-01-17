@@ -5,10 +5,7 @@ package cgl.imr.samples.dacidr.wdasmacof.vary;
  *		Twister-WDAMDS is implemented based on Twister-MDS.
  */
 
-import cgl.imr.base.Key;
-import cgl.imr.base.TwisterException;
-import cgl.imr.base.TwisterModel;
-import cgl.imr.base.TwisterMonitor;
+import cgl.imr.base.*;
 import cgl.imr.base.impl.GenericCombiner;
 import cgl.imr.base.impl.JobConf;
 import cgl.imr.client.TwisterDriver;
@@ -63,6 +60,7 @@ public class DAMDS2 {
 	static double sumOrigDistanceSquare;
 	static double avgOrigDistanceSquare;
 	static double maxOrigDistance;
+
 	static double tMax;
 	static double tCur = 0.0;
 	static double tMin;
@@ -714,18 +712,21 @@ public class DAMDS2 {
 			monitor = driver.runMapReduce();
 			monitor.monitorTillCompletion();
 			combiner = (GenericCombiner) driver.getCurrentCombiner();
-			if (!combiner.getResults().isEmpty()) {
-				Key key = combiner.getResults().keySet().iterator().next();
-				avgOrigDistance = ((DoubleArray) combiner.getResults().get(key))
-						.getData()[0];
-				sumOrigDistanceSquare = ((DoubleArray) combiner.getResults()
-						.get(key)).getData()[1];
-				maxOrigDistance = ((DoubleArray) combiner.getResults().get(key)).getData()[2];
+			Map<Key, Value> combinerResult = combiner.getResults();
+			if (!combinerResult.isEmpty()) {
+				Key key = combinerResult.keySet().iterator().next();
+				double[] combinerData = ((DoubleArray) combinerResult.get(key)).getData();
+				avgOrigDistance = combinerData[0];
+				sumOrigDistanceSquare = combinerData[1];
+				maxOrigDistance = combinerData[2];
+				// including diagonal elements if they qualify.
+				// Qualification criteria for a diagonal element is,
+				// 	sammonMapping && distance >=0 -> Yes
+				//	else weight != 0 && distance >=0 -> yes
+				long usedPairCount = (long) combinerData[3];
 
-				// Ignoring the diagonal zeros from the average.
-				double div = Math.pow(N, 2)-N;
-				avgOrigDistance = avgOrigDistance/div;
-				avgOrigDistanceSquare = sumOrigDistanceSquare / div;
+				avgOrigDistance = avgOrigDistance/usedPairCount;
+				avgOrigDistanceSquare = sumOrigDistanceSquare / usedPairCount;
 			} else {
 				System.err.println("Combiner did not return any values.");
 				driver.close();

@@ -31,6 +31,7 @@ public class AvgOrigDistanceReduceTask implements ReduceTask {
 		double average = 0;
 		double avgSquare = 0;
 		double maxDelta = 0.0;
+		long pairCount = 0;
 
 		double[] averages;
 		for (Value val : values) {
@@ -38,15 +39,18 @@ public class AvgOrigDistanceReduceTask implements ReduceTask {
 			average += averages[0];
 			avgSquare += averages[1];
 			
-			if (maxDelta < averages[2])
+			if (maxDelta < averages[2]) {
 				maxDelta = averages[2];
+			}
+			pairCount += ((long)averages[3]);
 		}
 		// Only one key from here.
-		double[] avgs = new double[3];
+		double[] avgs = new double[4];
 		//System.out.println(average);
 		avgs[0] = average;
 		avgs[1] = avgSquare;
 		avgs[2] = maxDelta;
-		collector.collect(new IntKey(0), new DoubleArray(avgs, 3));
+		avgs[3] = pairCount;
+		collector.collect(new IntKey(0), new DoubleArray(avgs, avgs.length));
 	}
 }

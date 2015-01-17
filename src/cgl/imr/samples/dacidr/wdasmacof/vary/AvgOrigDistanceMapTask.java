@@ -81,27 +81,33 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		double average = 0;
 		double avgSquare = 0;
 		double maxDelta = 0.0;
+		long pairCount = 0;
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				if(sammonMapping || weights[i][j] != 0){
-					double realD = data[i][j] / (double) Short.MAX_VALUE;
-					realD = distanceTransform != 1.0 ? Math.pow(realD, distanceTransform) : realD;
-					average += realD;
-					avgSquare += (realD * realD);
-
-					if (maxDelta < realD)
-						maxDelta = realD;
+				if (!sammonMapping && weights[i][j] == 0) {
+					continue;
 				}
+				double realD = data[i][j] / (double) Short.MAX_VALUE;
+				if (realD < 0) continue; // ignore missing distances (i.e. dist < 0) irrespective of weight
+				realD = distanceTransform != 1.0 ? Math.pow(realD, distanceTransform) : realD;
+				average += realD;
+				avgSquare += (realD * realD);
+
+				if (maxDelta < realD) {
+                    maxDelta = realD;
+                }
+				++pairCount;
 			}
 		}
 		//System.out.println(average);
-		double[] avgs = new double[3];
+		double[] avgs = new double[4];
 		avgs[0] = average;
 		avgs[1] = avgSquare;
 		avgs[2] = maxDelta;
+		avgs[3] = pairCount;
 		collector
-				.collect(new StringKey("stress-key"), new DoubleArray(avgs, 3));
+				.collect(new StringKey("stress-key"), new DoubleArray(avgs, avgs.length));
 	}
 
 }

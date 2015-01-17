@@ -108,8 +108,13 @@ public class CalcBCMapTask implements MapTask {
 				// separately.
 				if (i != j) {
 					double origD = deltaBlock[tmpI][j] / (double)Short.MAX_VALUE;
+					boolean missingDist = origD < 0;
 					origD = distanceTransform != 1.0 ? Math.pow(origD, distanceTransform) : origD;
-					double weight = sammonMapping ? 1.0/Math.max(origD, 0.001 * averageOriginalDistance) : weights[tmpI][j];
+					double weight = missingDist ? 0.0 : (sammonMapping ? 1.0/Math.max(origD, 0.001 * averageOriginalDistance) : weights[tmpI][j]);
+					if (!sammonMapping && missingDist){
+						weights[tmpI][j] = 0; // for the non Sammon case we rely on user given weights, but in the case of missing distances override user weight by zero
+					}
+
 					if(weight != 0){
 						double dist = calculateDistance(preX, preX[0].length, i, j);
 						if (dist >= 1.0E-10 && diff < origD) {

@@ -77,8 +77,12 @@ public class MatrixMultiplyMapTask implements MapTask{
 				for (int j = 0; j < deltaMatData.getWidth(); ++j) {
 					if (i + deltaMatData.getRowOffset() != j) {
 						double origD = deltaBlock[i][j]*1.0/Short.MAX_VALUE;
+						boolean missingDist = origD < 0;
 						origD = distanceTransform != 1.0 ? Math.pow(origD, distanceTransform) : origD;
-						double weight = sammonMapping ? 1.0 / Math.max(origD, 0.001 * averageOriginalDistance) : weights[i][j];
+						double weight = missingDist ? 0.0 : (sammonMapping ? 1.0 / Math.max(origD, 0.001 * averageOriginalDistance) : weights[i][j]);
+						if (!sammonMapping && missingDist){
+							weights[i][j] = 0; // for the non Sammon case we rely on user given weights, but in the case of missing distances override user weight by zero
+						}
 						V[i] += weight;
 					}
 				}
@@ -108,13 +112,15 @@ public class MatrixMultiplyMapTask implements MapTask{
 
 		X = sammonMapping ? MatrixUtils.matrixMultiply(distanceTransform != 1.0 ? (i, j) -> {
 														   double d = deltaBlock[i][j] * 1.0 / Short.MAX_VALUE;
+														   if (d < 0) return  0.0; // zero weight for missing distances
 														   d = Math.pow(d, distanceTransform);
 														   return 1.0 / Math.max(d, 0.001 * averageOriginalDistance);
-													   } : (i, j) -> 1.0 /
-															   Math.max(deltaBlock[i][j] * 1.0 / Short.MAX_VALUE,
-																		0.001 * averageOriginalDistance), V, X,
-													   blockHeight, X[0].length, N, bz, rowOffset) :
-				MatrixUtils.matrixMultiply(weights, V, X, blockHeight, X[0].length, N, bz, rowOffset);
+													   } : (i, j) -> {
+														   double d = deltaBlock[i][j] * 1.0 / Short.MAX_VALUE;
+														   if (d < 0) return  0.0; // zero weight for missing distances
+														   return  1.0 /Math.max(d,0.001 * averageOriginalDistance);},
+													   V, X,blockHeight, X[0].length, N, bz, rowOffset) :
+				MatrixUtils.matrixMultiply(weights, V, X, blockHeight, X[0].length, N, bz, rowOffset); // For non Sammon case weights for missing distances were set to zero in configure step
 
 		// Send C with the map task number to a reduce task. Which will simply
 		// combine these parts and form the N x d matrix.
