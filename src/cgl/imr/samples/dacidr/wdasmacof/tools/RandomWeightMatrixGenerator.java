@@ -1,9 +1,7 @@
 package cgl.imr.samples.dacidr.wdasmacof.tools;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -118,17 +116,52 @@ public class RandomWeightMatrixGenerator {
 			weightRow[2*i+1] = bytes[1];
 		});
 
-//		Path file = Paths.get(outDir, "w" + weight + "_" + 0);
-//		try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE_NEW))){
-//			int rows = q + (r > 0 ? 1 : 0);
-//			for (int row = 0; row < rows; ++i){
-//				bos.write(weightRow);
-//			}
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+		Path file = Paths.get(outDir, "w" + weight + "_" + 0);
+		String fat = file.toString();
+		try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE_NEW))){
+			int rows = q + (r > 0 ? 1 : 0);
+			for (int row = 0; row < rows; ++row){
+				bos.write(weightRow);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-		IntStream.range(0,splits).parallel().forEach(i->{
+		String thin = "";
+		if (r > 0){
+			file = Paths.get(outDir, "w" + weight + "_" + r);
+			thin = file.toString();
+			try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE_NEW))){
+				for (int row = 0; row < q; ++row){
+					bos.write(weightRow);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		Path script = Paths.get(outDir, "gen.sh");
+		try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(script, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW),true)) {
+			StringBuilder sb = new StringBuilder("#!/bin/bas\n");
+			int end = r > 0 ? r : splits;
+			for (int i = 1; i < end; ++i){
+				String to = Paths.get(outDir, "w" + weight + "_" + i).toString();
+				sb.append("cp ").append(fat).append(" ").append(to).append("\n");
+			}
+			if (r > 0){
+				for (int i = r; i < splits; ++i){
+					String to = Paths.get(outDir, "w" + weight + "_" + i).toString();
+					sb.append("cp ").append(thin).append(" ").append(to).append("\n");
+				}
+			}
+			writer.println(sb.toString());
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		/*IntStream.range(0,splits).parallel().forEach(i->{
 			Path file = Paths.get(outDir, "w" + weight + "_" + i);
 			try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(file, StandardOpenOption.CREATE_NEW))){
 				int rows = (i+1)*q + (i < r ? (i+1) : r);
@@ -138,7 +171,7 @@ public class RandomWeightMatrixGenerator {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		});
+		});*/
 
 
 	}
