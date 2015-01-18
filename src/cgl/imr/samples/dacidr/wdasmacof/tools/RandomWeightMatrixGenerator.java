@@ -29,6 +29,7 @@ public class RandomWeightMatrixGenerator {
 
 		if (args.length == 4){
 			generateFastSimpleWeights(args);
+			return;
 		}
 		String outputWeightMatrix = args[0];
 		int row = Integer.parseInt(args[1]);
