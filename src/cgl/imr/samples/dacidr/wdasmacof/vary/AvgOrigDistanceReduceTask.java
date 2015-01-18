@@ -53,7 +53,7 @@ public class AvgOrigDistanceReduceTask implements ReduceTask {
 		avgs[1] = avgSquare;
 		avgs[2] = maxDelta;
 		avgs[3] = pairCount;
-		avgs[3] = missingDistCount;
+		avgs[4] = missingDistCount;
 		collector.collect(new IntKey(0), new DoubleArray(avgs, avgs.length));
 	}
 }
