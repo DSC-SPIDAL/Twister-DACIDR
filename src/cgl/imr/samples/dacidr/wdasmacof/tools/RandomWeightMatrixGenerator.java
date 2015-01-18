@@ -150,7 +150,7 @@ public class RandomWeightMatrixGenerator {
 				sb.append("cp ").append(fat).append(" ").append(to).append("\n");
 			}
 			if (r > 0){
-				for (int i = r; i < splits; ++i){
+				for (int i = r+1; i < splits; ++i){
 					String to = Paths.get(outDir, "w" + weight + "_" + i).toString();
 					sb.append("cp ").append(thin).append(" ").append(to).append("\n");
 				}
