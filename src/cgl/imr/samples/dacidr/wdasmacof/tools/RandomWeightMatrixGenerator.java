@@ -143,7 +143,7 @@ public class RandomWeightMatrixGenerator {
 
 		Path script = Paths.get(outDir, "gen.sh");
 		try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(script, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW),true)) {
-			StringBuilder sb = new StringBuilder("#!/bin/bas\n");
+			StringBuilder sb = new StringBuilder("#!/bin/bash\n");
 			int end = r > 0 ? r : splits;
 			for (int i = 1; i < end; ++i){
 				String to = Paths.get(outDir, "w" + weight + "_" + i).toString();
