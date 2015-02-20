@@ -716,9 +716,13 @@ public class DAMDS2 {
 		GenericCombiner combiner;
 		try {
 			driver = new TwisterDriver(jobConf);
+			System.out.println("DEBUG: AvgMR - configuring maps");
 			driver.configureMaps();
+			System.out.println("DEBUG: AvgMR - done configuring maps");
 
+			System.out.println("DEBUG: AvgMR - running map reduce");
 			monitor = driver.runMapReduce();
+			System.out.println("DEBUG: AvgMR - done running map reduce");
 			monitor.monitorTillCompletion();
 			combiner = (GenericCombiner) driver.getCurrentCombiner();
 			Map<Key, Value> combinerResult = combiner.getResults();
