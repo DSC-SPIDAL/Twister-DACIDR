@@ -52,9 +52,10 @@
 
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import com.google.common.io.LittleEndianDataInputStream;
-
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -126,8 +127,12 @@ public class MDSShortMatrixData {
 				for (int j = 0; j < width; j++) {
 					int element = i * width + j; // element position - not the byte position
 					// We assume that Matrix values in binary files are stored in short value.
-					data[i][j] = mappedBytes.getShort(element*2);
-				}
+                    try {
+                        data[i][j] = mappedBytes.getShort(element*2);
+                    } catch (Exception e) {
+                        System.out.println("ERROR: loadDelta " + fileName + " i=" + i + " j=" + j + "rows=" + height + " cols=" + width);
+                    }
+                }
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

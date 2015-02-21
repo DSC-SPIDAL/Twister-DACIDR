@@ -44,8 +44,12 @@ public class FileOperation {
 				for (int j = 0; j < col; j++) {
 					int element = i * col + j; // element position - not the byte position
 					// We assume that Matrix values in binary files are stored in short value.
-					weights[i][j] = mappedBytes.getShort(element*2);
-				}
+                    try {
+                        weights[i][j] = mappedBytes.getShort(element*2);
+                    } catch (Exception e) {
+                        System.out.println("ERROR: loadDelta " + fileName + " i=" + i + " j=" + j + "rows=" + row + " cols=" + col);
+                    }
+                }
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
