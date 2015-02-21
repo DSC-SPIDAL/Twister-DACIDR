@@ -55,6 +55,12 @@ package cgl.imr.samples.dacidr.wdasmacof.vary;
 import com.google.common.io.LittleEndianDataInputStream;
 
 import java.io.*;
+import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 public class MDSShortMatrixData {
 	public MDSShortMatrixData() {
@@ -103,23 +109,31 @@ public class MDSShortMatrixData {
 	 * @throws IOException
 	 */
 	public short[][] loadDeltaFromBinFile(String fileName, boolean isBigEndian) throws IOException {
-		try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName))) {
-			DataInput dinData = isBigEndian ? new DataInputStream(bis) : new LittleEndianDataInputStream(bis);
+		if (!(height > 0 && width > 0)) {
+			throw new IOException("Invalid number of rows or columns.");
+		}
+
+		this.data = new short[height][width];
 
 
-			if (!(height > 0 && height <= Integer.MAX_VALUE && width > 0 && width <= Integer.MAX_VALUE)) {
-				throw new IOException("Invalid number of rows or columns.");
-			}
+		try (FileChannel fc = (FileChannel) Files.newByteChannel(Paths.get(fileName), StandardOpenOption.READ)) {
+			long pos = 0;
+			MappedByteBuffer mappedBytes = fc.map(FileChannel.MapMode.READ_ONLY, pos,
+					height * width * 2); // 2 for short data
+			mappedBytes.order(isBigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
 
-			this.data = new short[height][width];
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {
+					int element = i * width + j; // element position - not the byte position
 					// We assume that Matrix values in binary files are stored in short value.
-					data[i][j] = dinData.readShort();
+					data[i][j] = mappedBytes.getShort(element*2);
 				}
 			}
-			return this.data;
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+
+		return this.data;
 	}
 
 	public void setHeight(int height) {
