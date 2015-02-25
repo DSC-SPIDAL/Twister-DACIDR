@@ -27,7 +27,6 @@ public class AvgOrigDistanceMapTask implements MapTask {
 	@Override
 	public void configure(JobConf jobConf, MapperConf mapConf)
 			throws TwisterException {
-		System.out.println("  DEBUG: AvgMR - MapTask " + mapConf.getMapTaskNo() + " starting configuring");
 		this.mapConf = mapConf;
 
 		sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
@@ -62,19 +61,14 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		}
 
 		try {
-			System.out.println("  DEBUG: AvgMR - MapTask " + mapConf.getMapTaskNo() + " loading distances");
 			rowData.loadDeltaFromBinFile(fileName, bigEndian);
-			System.out.println("  DEBUG: AvgMR - MapTask " + mapConf.getMapTaskNo() + " done loading distances");
             // The weights are used in this map-reduce stage only to decide if a distance value
             // should be considered (non zero weight) or not (zero weight).
             // In Sammon mode we'll consider all distances,
             // hence the reason not load weights for Sammon.
             if (!sammonMapping){
-				System.out.println("  DEBUG: AvgMR - MapTask " + mapConf.getMapTaskNo() + " loading weights");
 				weights = FileOperation.loadWeights(weightName, rowData.getHeight(), rowData.getWidth());
-				System.out.println("  DEBUG: AvgMR - MapTask " + mapConf.getMapTaskNo() + " done loading weights");
 			}
-			System.out.println("  DEBUG: AvgMR - MapTask " + mapConf.getMapTaskNo() + " done configuring");
         } catch (Exception e) {
 			throw new TwisterException(e);
 		}
