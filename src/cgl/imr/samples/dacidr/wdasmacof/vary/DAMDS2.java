@@ -541,8 +541,8 @@ public class DAMDS2 {
 		// Use Random class for generating random initial mapping solution.
 		// For the test, set the Random seed in order to produce the same result
 		// for the same problem.
-		// Random rand = new Random(47);
-		Random rand = new Random(System.currentTimeMillis()); // Real random
+		Random rand = new Random(47);
+//		Random rand = new Random(System.currentTimeMillis()); // Real random
 		// seed.
 		for (int i = 0; i < numDataPoints; i++) {
 			for (int j = 0; j < targetDim; j++) {
