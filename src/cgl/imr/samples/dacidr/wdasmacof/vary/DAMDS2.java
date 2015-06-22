@@ -184,9 +184,7 @@ public class DAMDS2 {
 				while ( diffStress >= threshold ) {
 					BC = calculateBC(bcDriver, preX);
 
-                    for (double[] a : BC){
-                        System.out.println(Arrays.toString(a));
-                    }
+
 
 					X = conjugateGradient(mmDriver, BC, preX, cgCount);
 					

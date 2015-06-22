@@ -10,6 +10,7 @@ import cgl.imr.worker.MemCache;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * 
@@ -65,6 +66,10 @@ public class CalcBCMapTask implements MapTask {
 		// Each map task calculates the m th block of the matrix, where m is the
 		// map task number.
 		calculateBofZ(preX);
+
+        for (float[] a : BofZ){
+            System.out.println(Arrays.toString(a));
+        }
 
 		// Next we can calculate the BofZ * preX.
 		double[][] C = MatrixUtils.matrixMultiply(BofZ, preX, blockHeight,
