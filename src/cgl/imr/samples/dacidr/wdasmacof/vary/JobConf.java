@@ -14,6 +14,7 @@ public class JobConf {
 
     public JobConf(String jobID) {
         this.jobID = jobID;
+        props = new Properties();
     }
 
     public void addProperty(String key, String value){
