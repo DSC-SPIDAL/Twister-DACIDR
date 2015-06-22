@@ -1,16 +1,10 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import cgl.imr.base.*;
-import cgl.imr.base.impl.JobConf;
-import cgl.imr.base.impl.MapperConf;
-import cgl.imr.types.DoubleArray;
-import cgl.imr.types.StringKey;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class AvgOrigDistanceMapTask implements MapTask {
+public class AvgOrigDistanceMapTask {
 
 	MDSShortMatrixData rowData;
 	MapperConf mapConf;
@@ -19,14 +13,8 @@ public class AvgOrigDistanceMapTask implements MapTask {
 	double distanceTransform = 1.0;
 	private boolean bigEndian = true;
 
-	@Override
-	public void close() throws TwisterException {
-		// TODO Auto-generated method stub
-	}
 
-	@Override
-	public void configure(JobConf jobConf, MapperConf mapConf)
-			throws TwisterException {
+	public void configure(JobConf jobConf, MapperConf mapConf) {
 		this.mapConf = mapConf;
 
 		sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
@@ -70,13 +58,11 @@ public class AvgOrigDistanceMapTask implements MapTask {
 				weights = FileOperation.loadWeights(weightName, rowData.getHeight(), rowData.getWidth());
 			}
         } catch (Exception e) {
-			throw new TwisterException(e);
+			throw new RuntimeException(e);
 		}
 	}
 
-	@Override
-	public void map(MapOutputCollector collector, Key key, Value val)
-			throws TwisterException {
+	public double [] map(){
 		short[][] data = rowData.getData();
 		int height = rowData.getHeight();
 		int width = rowData.getWidth();
@@ -113,8 +99,6 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		avgs[2] = maxDelta;
 		avgs[3] = pairCount;
 		avgs[4] = missingDistCount;
-		collector
-				.collect(new StringKey("stress-key"), new DoubleArray(avgs, avgs.length));
+        return  avgs;
 	}
-
 }

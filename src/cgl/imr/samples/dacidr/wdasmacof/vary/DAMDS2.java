@@ -5,14 +5,7 @@ package cgl.imr.samples.dacidr.wdasmacof.vary;
  *		Twister-WDAMDS is implemented based on Twister-MDS.
  */
 
-import cgl.imr.base.*;
-import cgl.imr.base.impl.GenericCombiner;
-import cgl.imr.base.impl.JobConf;
-import cgl.imr.client.TwisterDriver;
 import cgl.imr.samples.dacidr.wdasmacof.utils.Ref;
-import cgl.imr.types.DoubleArray;
-import cgl.imr.types.DoubleValue;
-import cgl.imr.types.StringValue;
 import com.google.common.base.Stopwatch;
 import org.safehaus.uuid.UUIDGenerator;
 
@@ -136,11 +129,11 @@ public class DAMDS2 {
 
 			double[][] preX = generateInitMapping(N, D);
 
-			TwisterModel stressDriver = configureCalculateStress(numMapTasks,
+			StressMapTask stressMap = configureCalculateStress(numMapTasks,
 					inputFolder, inputPrefix, weightPrefix, idsFile);
 			double stress = -1.0;
 
-			double preStress = calculateStress(stressDriver, preX, numMapTasks);
+			double preStress = calculateStress(stressMap, preX, numMapTasks);
 			System.out.println("Initial Stress: " + preStress);
 
 			double diffStress = 10 * threshold;  //starting value
@@ -149,11 +142,11 @@ public class DAMDS2 {
 			double BC[][] = null;
 
 			// Configuring BC MapReduce driver.
-			TwisterModel bcDriver = 
+			CalcBCMapTask bcMap =
 					configureCalculateBC(numMapTasks, inputFolder, 
 							inputPrefix, weightPrefix, idsFile);
 			
-			TwisterModel mmDriver = 
+			MatrixMultiplyMapTask mmMap =
 					configureMatrixMutiply(numMapTasks, inputFolder, inputPrefix, weightPrefix, idsFile);
 
 			double QoR1 = 0;
@@ -174,7 +167,7 @@ public class DAMDS2 {
 			int loopNum = 0;
 
 			while (true) {
-				preStress = calculateStress(stressDriver, preX, numMapTasks);
+				preStress = calculateStress(stressMap, preX, numMapTasks);
 				diffStress = threshold + 1.0;
 
 				System.out.printf("\nStart of loop %d Temperature (T_Cur) %.5g\n", loopNum, tCur);
@@ -182,11 +175,11 @@ public class DAMDS2 {
 				int itrNum = 0;
 				Ref<Integer> cgCount = new Ref<>(0);
 				while ( diffStress >= threshold ) {
-					BC = calculateBC(bcDriver, preX);
+					BC = calculateBC(bcMap, preX);
 
-					X = conjugateGradient(mmDriver, BC, preX, cgCount);
+					X = conjugateGradient(mmMap, BC, preX, cgCount);
 					
-					stress = calculateStress(stressDriver, X, numMapTasks);
+					stress = calculateStress(stressMap, X, numMapTasks);
 					diffStress = preStress - stress;
 					preStress = stress;
 					preX = MatrixUtils.copy(X);
@@ -228,15 +221,12 @@ public class DAMDS2 {
 			} else {
 				writeOuput(X, labelsFile, outputFile);
 			}
-			bcDriver.close();			
-			mmDriver.close();
-			stressDriver.close();
+
 			
-			
-			TwisterModel finalStressDriver = configureCalculateStress(numMapTasks,
+			StressMapTask finalStressMap = configureCalculateStress(numMapTasks,
 					inputFolder, inputPrefix, finalWeightPrefix, idsFile);
 
-			Double finalStress = calculateStress(finalStressDriver, X, numMapTasks);
+			Double finalStress = calculateStress(finalStressMap, X, numMapTasks);
 
 			mainTimer.stop();
 
@@ -303,14 +293,14 @@ public class DAMDS2 {
 	}
 
 
-	private static double[][] conjugateGradient(TwisterModel mmDriver, 
-			double[][] BC, double[][] preX, Ref<Integer> outCgCount) throws TwisterException{
+	private static double[][] conjugateGradient(MatrixMultiplyMapTask mmMap,
+			double[][] BC, double[][] preX, Ref<Integer> outCgCount){
 		double[][] X = null;
 		double[][] r = new double[N][D];
 		double[][] p = new double[N][D];
 		
 		X = preX;
-		r = calcMM(mmDriver, X);
+		r = calcMM(mmMap, X);
 
 		for(int i = 0; i < N; ++i)
 			for(int j = 0; j < D; ++j){
@@ -329,7 +319,7 @@ public class DAMDS2 {
 			++CG_REAL_ITER;
 			//System.out.println("2");
 			//calculate alpha
-			double[][] Ap = calcMM(mmDriver, p);
+			double[][] Ap = calcMM(mmMap, p);
 			
 			double alpha = rTr
 					/innerProductCalculation(p, Ap);
@@ -427,49 +417,22 @@ public class DAMDS2 {
 		writer.close();
 	}
 
-	private static double[][] calculateBC(TwisterModel bcDriver, double[][] preX)
-			throws TwisterException {
-
-		MDSMatrixData BCMatData = null;
-		MDSMatrixData preXMatData = new MDSMatrixData(preX, N, preX[0].length);
-		preXMatData.setCurT(tCur);
-		
-		String memCacheKey = bcDriver.addToMemCache(preXMatData);
-		TwisterMonitor monitor = bcDriver.runMapReduceBCast(new StringValue(
-				memCacheKey));
-		monitor.monitorTillCompletion();
-		SEQUENTIAL_TIME += monitor.getTotalSequentialTimeSeconds();
-		bcDriver.cleanMemCache(memCacheKey);
-		GenericCombiner combiner = (GenericCombiner) bcDriver
-				.getCurrentCombiner();
-		if (!combiner.getResults().isEmpty()) {
-			Key key = combiner.getResults().keySet().iterator().next();
-			BCMatData = (MDSMatrixData) (combiner.getResults().get(key));
-			return BCMatData.getData();
-		} else {			
-		/*
-			if(status.isSuccess()){
-				System.err.println("Combiner did not return any values. Terminating Job");
-				bcDriver.close();
-				System.exit(-1);
-			}
-			*/
-			return null;
-		}	
-
+	private static double[][] calculateBC(CalcBCMapTask map, double[][] preX) {
+        Stopwatch timer = Stopwatch.createStarted();
+        preX = map.map(preX, tCur);
+        timer.stop();
+        SEQUENTIAL_TIME += timer.elapsed(TimeUnit.MILLISECONDS);
+        return preX;
 	}
 
-	private static TwisterModel configureCalculateBC(int numMapTasks,
-			String inputFolder, String inputPrefix, String weightPrefix, String idsFile) throws TwisterException {
+	private static CalcBCMapTask configureCalculateBC(int numMapTasks,
+			String inputFolder, String inputPrefix, String weightPrefix, String idsFile)  {
 		String jobID = "calc-BC-" + uuidGen.generateRandomBasedUUID();
 		// we need only one reduce task to aggregate the parts of BC
 		int numReducers = 1;
 
 		// JobConfigurations
 		JobConf jobConf = new JobConf(jobID);
-		jobConf.setMapperClass(CalcBCMapTask.class);
-		jobConf.setReducerClass(CalcBCReduceTask.class);
-		jobConf.setCombinerClass(GenericCombiner.class);
 		jobConf.setNumMapTasks(numMapTasks);
 		jobConf.setNumReduceTasks(numReducers);
 		jobConf.addProperty(PROP_BZ, String.valueOf(BLOCK_SIZE));
@@ -486,55 +449,28 @@ public class DAMDS2 {
 		jobConf.addProperty("WeightPrefix", weightPrefix);
 		jobConf.addProperty("IdsFile", idsFile);
 
-		TwisterModel bcDriver = new TwisterDriver(jobConf);
-		bcDriver.configureMaps();
-		return bcDriver;
-
+        CalcBCMapTask map = new CalcBCMapTask();
+        map.configure(jobConf, new MapperConf());
+        return map;
 	}
 
-	private static double[][] calcMM(TwisterModel xDriver, double[][] X)
-			throws TwisterException {
+	private static double[][] calcMM(MatrixMultiplyMapTask map, double[][] X) {
 
-		MDSMatrixData rMatData = null;
-		MDSMatrixData XMatData = new MDSMatrixData(X, X.length, X[0].length);
-		String memCacheKey = xDriver.addToMemCache(XMatData);
-		TwisterMonitor monitor = xDriver.runMapReduceBCast(new StringValue(
-				memCacheKey));
-		monitor.monitorTillCompletion();
-		SEQUENTIAL_TIME += monitor.getTotalSequentialTimeSeconds();
-		xDriver.cleanMemCache(memCacheKey);
-
-		GenericCombiner combiner = (GenericCombiner) xDriver
-				.getCurrentCombiner();
-		if (!combiner.getResults().isEmpty()) {
-			Key key = combiner.getResults().keySet().iterator().next();
-			rMatData = (MDSMatrixData) (combiner.getResults().get(key));
-			return rMatData.getData();
-		} else {
-			/*
-			if(status.isSuccess()){
-				System.err.println("Combiner did not return any values. Terminating Job");
-				xDriver.close();
-				System.exit(-1);
-			}
-			*/
-			return null;
-		}
-		
-
+        Stopwatch timer = Stopwatch.createStarted();
+        X = map.map(X);
+        timer.stop();
+        SEQUENTIAL_TIME += timer.elapsed(TimeUnit.MILLISECONDS);
+        return  X;
 	}
 
-	private static TwisterModel configureMatrixMutiply(int numMapTasks,
-			String inputFolder, String inputPrefix, String weightPrefix, String idsFile) throws TwisterException {
+	private static MatrixMultiplyMapTask configureMatrixMutiply(int numMapTasks,
+			String inputFolder, String inputPrefix, String weightPrefix, String idsFile){
 		String jobID = "calc-CG-" + uuidGen.generateRandomBasedUUID();
 		// we need only one reduce task to aggregate the parts of X.
 		int numReducers = 1;
 
 		// JobConfigurations
 		JobConf jobConf = new JobConf(jobID);
-		jobConf.setMapperClass(MatrixMultiplyMapTask.class);
-		jobConf.setReducerClass(MatrixMultiplyReduceTask.class);
-		jobConf.setCombinerClass(GenericCombiner.class);
 		jobConf.setNumMapTasks(numMapTasks);
 		jobConf.setNumReduceTasks(numReducers);
 		jobConf.addProperty(PROP_BZ, String.valueOf(BLOCK_SIZE));
@@ -548,62 +484,28 @@ public class DAMDS2 {
 		jobConf.addProperty("WeightPrefix", weightPrefix);
 		jobConf.addProperty("IdsFile", idsFile);
 
-		TwisterModel xDriver = new TwisterDriver(jobConf);
-		xDriver.configureMaps();
-		return xDriver;
+        MatrixMultiplyMapTask map = new MatrixMultiplyMapTask();
+        map.configure(jobConf, new MapperConf());
+        return  map;
 	}
 
-	public static Double calculateStress(TwisterModel stressDriver,
-			double[][] preX, int numMapTasks) throws TwisterException {
-		double stress = 0;
-
-		MDSMatrixData preXMatData = new MDSMatrixData(preX, N, preX[0].length);
-		preXMatData.setCurT(tCur);
-		
-		String memCacheKey = stressDriver.addToMemCache(preXMatData);
-		TwisterMonitor monitor = stressDriver
-				.runMapReduceBCast(new StringValue(memCacheKey));
-		monitor.monitorTillCompletion();
-		SEQUENTIAL_TIME += monitor.getTotalSequentialTimeSeconds();
-		stressDriver.cleanMemCache(memCacheKey);
-
-		GenericCombiner combiner = (GenericCombiner) stressDriver
-				.getCurrentCombiner();
-		if (!combiner.getResults().isEmpty()) {
-			Key key = combiner.getResults().keySet().iterator().next();
-			stress = ((DoubleValue) combiner.getResults().get(key)).getVal();
-			return stress / sumOrigDistanceSquare;
-		} else {
-			/*
-			if(status.isSuccess()){
-				System.err.println("Combiner did not return any values. Terminating Job");
-				stressDriver.close();
-				System.exit(-1);
-			}
-			*/
-			return null;
-		}
-		/*
-		 * Stress divided by half of the sum of the square of the original
-		 * distance to normalize it. We need it to be by half of the sum because
-		 * when we calculate the stress we do it only for the upper triangular
-		 * matrix. Otherwise we could just divide by the sum.
-		 */
-		// return stress/(sumOrigDistanceSquare/2);
-		
+	public static Double calculateStress(StressMapTask map,
+			double[][] preX, int numMapTasks) {
+        Stopwatch timer = Stopwatch.createStarted();
+		double stress = map.map(preX, tCur);
+        timer.stop();
+        SEQUENTIAL_TIME += timer.elapsed(TimeUnit.MILLISECONDS);
+        return stress;
 	}
 
-	public static TwisterModel configureCalculateStress(int numMapTasks,
-			String inputFolder, String inputPrefix, String weightPrefix, String idsFile) throws TwisterException {
+	public static StressMapTask configureCalculateStress(int numMapTasks,
+			String inputFolder, String inputPrefix, String weightPrefix, String idsFile) {
 		String jobID = "stress-calc-" + uuidGen.generateRandomBasedUUID();
 		// we need only one reducer for the above algorithm.
 		int numReducers = 1;
 
 		// JobConfigurations
 		JobConf jobConf = new JobConf(jobID);
-		jobConf.setMapperClass(StressMapTask.class);
-		jobConf.setReducerClass(StressReduceTask.class);
-		jobConf.setCombinerClass(GenericCombiner.class);
 		jobConf.setNumMapTasks(numMapTasks);
 		jobConf.setNumReduceTasks(numReducers);
 
@@ -619,10 +521,9 @@ public class DAMDS2 {
 		jobConf.addProperty("IdsFile", idsFile);
 //		jobConf.setFaultTolerance();
 
-		TwisterModel stressDriver = new TwisterDriver(jobConf);
-		stressDriver.configureMaps();
-
-		return stressDriver;
+        StressMapTask map = new StressMapTask();
+        map.configure(jobConf, new MapperConf());
+		return map;
 	}
 
 	/**
@@ -697,9 +598,6 @@ public class DAMDS2 {
 		// JobConfigurations for calculating original average distance.
 		JobConf jobConf = new JobConf("avg-original-distance"
 				+ uuidGen.generateTimeBasedUUID());
-		jobConf.setMapperClass(AvgOrigDistanceMapTask.class);
-		jobConf.setReducerClass(AvgOrigDistanceReduceTask.class);
-		jobConf.setCombinerClass(GenericCombiner.class);
 		jobConf.setNumMapTasks(numMapTasks);
 		jobConf.setNumReduceTasks(1);// One reducer is enough since we just
 		// summing some numbers.
@@ -711,42 +609,17 @@ public class DAMDS2 {
 		jobConf.addProperty("WeightPrefix", weightedPrefix);
 		jobConf.addProperty("IdsFile", idsFile);
 
-		TwisterModel driver = null;
-		TwisterMonitor monitor = null;
-		GenericCombiner combiner;
-		try {
-			driver = new TwisterDriver(jobConf);
-			driver.configureMaps();
-			monitor = driver.runMapReduce();
-			monitor.monitorTillCompletion();
-			combiner = (GenericCombiner) driver.getCurrentCombiner();
-			Map<Key, Value> combinerResult = combiner.getResults();
-			if (!combinerResult.isEmpty()) {
-				Key key = combinerResult.keySet().iterator().next();
-				double[] combinerData = ((DoubleArray) combinerResult.get(key)).getData();
-				avgOrigDistance = combinerData[0];
-				sumOrigDistanceSquare = combinerData[1];
-				maxOrigDistance = combinerData[2];
-				// including diagonal elements if they qualify.
-				// Qualification criteria for a diagonal element is,
-				// 	sammonMapping && distance >=0 -> Yes
-				//	else weight != 0 && distance >=0 -> yes
-				long usedPairCount = (long) combinerData[3];
-				long missingDistCount = (long) combinerData[4];
-				System.out.println("  Number of used pairs: " + usedPairCount);
-				System.out.println("  Missing distances percentage: " + missingDistCount*100.0/usedPairCount);
-				avgOrigDistance = avgOrigDistance/usedPairCount;
-				avgOrigDistanceSquare = sumOrigDistanceSquare / usedPairCount;
-			} else {
-				System.err.println("Combiner did not return any values.");
-				driver.close();
-				System.exit(-1);
-			}
-
-		} catch (TwisterException e) {
-			driver.close();
-			throw e;
-		}
-		driver.close();
+        AvgOrigDistanceMapTask map = new AvgOrigDistanceMapTask();
+        map.configure(jobConf, new MapperConf());
+        double [] combinerData = map.map();
+        avgOrigDistance = combinerData[0];
+        sumOrigDistanceSquare = combinerData[1];
+        maxOrigDistance = combinerData[2];
+        long usedPairCount = (long) combinerData[3];
+        long missingDistCount = (long) combinerData[4];
+        System.out.println("  Number of used pairs: " + usedPairCount);
+        System.out.println("  Missing distances percentage: " + missingDistCount*100.0/usedPairCount);
+        avgOrigDistance = avgOrigDistance/usedPairCount;
+        avgOrigDistanceSquare = sumOrigDistanceSquare / usedPairCount;
 	}
 }

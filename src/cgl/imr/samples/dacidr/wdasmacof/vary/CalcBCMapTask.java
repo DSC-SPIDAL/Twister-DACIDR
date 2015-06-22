@@ -1,12 +1,5 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import cgl.imr.base.*;
-import cgl.imr.base.impl.JobConf;
-import cgl.imr.base.impl.MapperConf;
-import cgl.imr.types.StringKey;
-import cgl.imr.types.StringValue;
-import cgl.imr.worker.MemCache;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -25,7 +18,7 @@ import java.io.IOException;
  *			Modify Twister-MDS version of this class for Twister-DAMDS version.
  */
 
-public class CalcBCMapTask implements MapTask {
+public class CalcBCMapTask {
     private boolean sammonMapping = false;
 	private double distanceTransform = 1.0;
 	private boolean bigEndian = true;
@@ -47,16 +40,8 @@ public class CalcBCMapTask implements MapTask {
 	float[][] BofZ = null;
 	private JobConf jobConf;
 
-	public void map(MapOutputCollector collector, Key key, Value val)
-			throws TwisterException {
+	public double [][] map(double [][] preX, double tmpCurT){
 
-		StringValue memCacheKey = (StringValue) val;
-		MDSMatrixData mData = (MDSMatrixData) (MemCache.getInstance().get(
-				jobConf.getJobId(), memCacheKey.toString()));
-
-		double[][] preX = mData.getData();
-		double tmpCurT = mData.getCurT();
-		
 		if (tmpCurT != tCur) {
 			tCur = tmpCurT;
 		}
@@ -73,10 +58,7 @@ public class CalcBCMapTask implements MapTask {
 		// Send C with the map task number to a reduce task. Which will simply
 		// combine
 		// these parts and form the N x d matrix.
-		MDSMatrixData newMData = new MDSMatrixData(C, blockHeight, C[0].length,
-				mData.getRow(), blockOffset);
-		collector.collect(new StringKey("BC-calc-to-reduce-key"), newMData);
-
+        return C;
 	}
 
 	/**
@@ -164,8 +146,7 @@ public class CalcBCMapTask implements MapTask {
 	 * 1. Block from the delta matrix 2. Block from V matrix. The data files
 	 * contains the matrix block data in binary form.
 	 */
-	public void configure(JobConf jobConf, MapperConf mapConf)
-			throws TwisterException {
+	public void configure(JobConf jobConf, MapperConf mapConf) {
         sammonMapping = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_SAMMON));
 		distanceTransform = Double.parseDouble(jobConf.getProperty(DAMDS2.PROP_DTRANS));
 		bigEndian = Boolean.parseBoolean(jobConf.getProperty(DAMDS2.PROP_BIGENDIAN));
@@ -209,7 +190,7 @@ public class CalcBCMapTask implements MapTask {
 						deltaMatData.getWidth());
 			}
 		} catch (Exception e) {
-			throw new TwisterException(e);
+			throw new RuntimeException(e);
 		}			
 
 		this.jobConf = jobConf;
@@ -225,9 +206,5 @@ public class CalcBCMapTask implements MapTask {
 		N = deltaMatData.getWidth();
 		BofZ = new float[blockHeight][N];
 		mapNo = mapConf.getMapTaskNo();
-	}
-
-	public void close() throws TwisterException {
-		// TODO Auto-generated method stub
 	}
 }

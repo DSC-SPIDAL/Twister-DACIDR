@@ -1,17 +1,10 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import cgl.imr.base.*;
-import cgl.imr.base.impl.JobConf;
-import cgl.imr.base.impl.MapperConf;
-import cgl.imr.types.StringKey;
-import cgl.imr.types.StringValue;
-import cgl.imr.worker.MemCache;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class MatrixMultiplyMapTask implements MapTask{
+public class MatrixMultiplyMapTask {
 
     private boolean sammonMapping = false;
 	private double distanceTransform = 1.0;
@@ -26,15 +19,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 	int bz;
 	double[] V;
 	
-	@Override
-	public void close() throws TwisterException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void configure(JobConf jobConf, MapperConf mapConf)
-			throws TwisterException {
+	public void configure(JobConf jobConf, MapperConf mapConf) {
 		// TODO Auto-generated method stub
 		this.jobConf = jobConf;
 		
@@ -101,14 +86,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 
 	}
 
-	@Override
-	public void map(MapOutputCollector collector, Key key, Value val)
-			throws TwisterException {
-		// TODO Auto-generated method stub
-		StringValue memCacheKey = (StringValue) val;
-		MDSMatrixData mData = (MDSMatrixData) (MemCache.getInstance().get(
-				jobConf.getJobId(), memCacheKey.toString()));
-		double[][] X = mData.getData();
+	public double [][] map(double [][] X){
 
 		// Next we can calculate the BofZ * preX.
 
@@ -127,9 +105,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 		// Send C with the map task number to a reduce task. Which will simply
 		// combine these parts and form the N x d matrix.
 		// We don't need offset here.
-		MDSMatrixData newMData = new MDSMatrixData(X, blockHeight, X[0].length,
-				mData.getRow(), rowOffset);
-		collector.collect(new StringKey("MM-map-to-reduce-key"), newMData);
+        return X;
 	}
 
 	

@@ -1,13 +1,5 @@
 package cgl.imr.samples.dacidr.wdasmacof.vary;
 
-import cgl.imr.base.*;
-import cgl.imr.base.impl.JobConf;
-import cgl.imr.base.impl.MapperConf;
-import cgl.imr.types.DoubleValue;
-import cgl.imr.types.StringKey;
-import cgl.imr.types.StringValue;
-import cgl.imr.worker.MemCache;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -24,7 +16,7 @@ import java.io.IOException;
  * @author Seung-Hee Bae: sebae@cs.indiana.edu
  *			Modify Twister-MDS version for implementing Twister-DAMDS by Seung-Hee.
  */
-public class StressMapTask implements MapTask {
+public class StressMapTask {
 
     private boolean sammonMapping = false;
 	private double distanceTransform = 1.0;
@@ -40,9 +32,7 @@ public class StressMapTask implements MapTask {
 	MapperConf mapConf;
 	JobConf jobConf;
 
-	@Override
-	public void configure(JobConf jobConf, MapperConf mapConf)
-			throws TwisterException {
+	public void configure(JobConf jobConf, MapperConf mapConf) {
 		this.mapConf = mapConf;
 		this.jobConf = jobConf;
 
@@ -94,22 +84,14 @@ public class StressMapTask implements MapTask {
 			N = deltaBlock.getWidth();
 			
 		} catch (Exception e) {
-			throw new TwisterException(e);
+			throw new RuntimeException(e);
 		}
 	}
 
-	public void map(MapOutputCollector collector, Key key, Value val)
-			throws TwisterException {
-
-		StringValue memCacheKey = (StringValue) val;
-		MDSMatrixData mData = (MDSMatrixData) (MemCache.getInstance().get(
-				jobConf.getJobId(), memCacheKey.toString()));
+	public double map(double [][] preXData, double tmpCurT){
 
 		int rowOffset = deltaBlock.getRowOffset();
 
-		double[][] preXData = mData.getData();
-		double tmpCurT = mData.getCurT();
-		
 		short deltaMatData[][] = deltaBlock.getData();
 
 		int tmpI = 0;
@@ -148,9 +130,7 @@ public class StressMapTask implements MapTask {
 				}
 			}
 		}
-		// Send the partial sigma.
-		collector.collect(new StringKey("stress-map-to-reduce-key"),
-				new DoubleValue(sigma));
+        return sigma;
 	}
 
 	private static double calculateDistance(double[][] origMat, int vecLength,
@@ -168,9 +148,5 @@ public class StressMapTask implements MapTask {
 
 		dist = Math.sqrt(dist);
 		return dist;
-	}
-
-	public void close() throws TwisterException {
-		// TODO Auto-generated method stub
 	}
 }
