@@ -7,9 +7,7 @@ import cgl.imr.types.StringKey;
 import cgl.imr.types.StringValue;
 import cgl.imr.worker.MemCache;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 
 /**
@@ -67,8 +65,16 @@ public class CalcBCMapTask implements MapTask {
 		// map task number.
 		calculateBofZ(preX);
 
-        for (float[] a : BofZ){
-            System.out.println(Arrays.toString(a));
+        try {
+            PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.out.txt");
+            for (float[] a : BofZ){
+                writer.println(Arrays.toString(a));
+            }
+            writer.flush();
+            writer.close();
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
 
 		// Next we can calculate the BofZ * preX.
