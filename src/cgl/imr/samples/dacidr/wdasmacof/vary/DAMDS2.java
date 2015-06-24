@@ -657,6 +657,10 @@ public class DAMDS2 {
 
                 String[] splits = pattern.split(line.trim());
                 for (int i = 0; i < splits.length; ++i){
+                    if (i == 0){
+                        splits[i] = splits[i].substring(1);
+                    }
+                    splits[i] = splits[i].substring(0,splits[i].length() -1);
                     x[row][i] = Double.parseDouble(splits[i]);
                 }
                 ++row;
