@@ -64,6 +64,7 @@ public class CalcBCMapTask implements MapTask {
 		// Each map task calculates the m th block of the matrix, where m is the
 		// map task number.
 		calculateBofZ(preX);
+        System.out.println("******End of BofZ, going to write the output");
 
         try {
             PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.bofzout.txt");
