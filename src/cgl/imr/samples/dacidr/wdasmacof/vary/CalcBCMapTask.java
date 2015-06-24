@@ -97,7 +97,7 @@ public class CalcBCMapTask implements MapTask {
 	private void calculateBofZ(double[][] preX) {
         try {
             PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.bofz.prex.out.txt");
-            for (float[] a : BofZ){
+            for (double[] a : preX){
                 writer.println(Arrays.toString(a));
             }
             writer.flush();
