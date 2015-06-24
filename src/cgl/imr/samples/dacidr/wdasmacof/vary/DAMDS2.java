@@ -14,13 +14,18 @@ import cgl.imr.types.DoubleArray;
 import cgl.imr.types.DoubleValue;
 import cgl.imr.types.StringValue;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import org.safehaus.uuid.UUIDGenerator;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -638,7 +643,31 @@ public class DAMDS2 {
 	 */
 	static double[][] generateInitMapping(int numDataPoints,
 			int targetDim) {
-		double matX[][] = new double[numDataPoints][targetDim];
+        /* TODO remove after testing */
+        String file = "/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/initprex.txt";
+        try (BufferedReader br = Files.newBufferedReader(
+            Paths.get(file), Charset.defaultCharset())){
+            double x[][] = new double[numDataPoints][targetDim];
+            String line;
+            Pattern pattern = Pattern.compile("[\t ]");
+            int row = 0;
+            while ((line = br.readLine()) != null) {
+                if (Strings.isNullOrEmpty(line))
+                    continue; // continue on empty lines - "while" will break on null anyway;
+
+                String[] splits = pattern.split(line.trim());
+                for (int i = 0; i < splits.length; ++i){
+                    x[row][i] = Double.parseDouble(splits[i]);
+                }
+                ++row;
+            }
+            return x;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+		/*double matX[][] = new double[numDataPoints][targetDim];
 		// Use Random class for generating random initial mapping solution.
 		// For the test, set the Random seed in order to produce the same result
 		// for the same problem.
@@ -653,7 +682,7 @@ public class DAMDS2 {
 					matX[i][j] = -rand.nextDouble();
 			}
 		}
-		return matX;
+		return matX;*/
 	}
 
 

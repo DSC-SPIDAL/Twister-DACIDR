@@ -65,17 +65,18 @@ public class CalcBCMapTask implements MapTask {
 		// map task number.
 		calculateBofZ(preX);
 
-        /*try {
-            PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.out.txt");
+        try {
+            PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.bofzout.txt");
             for (float[] a : BofZ){
                 writer.println(Arrays.toString(a));
             }
             writer.flush();
             writer.close();
+            System.out.println("****BofZ Done");
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
-        }*/
+        }
 
 		// Next we can calculate the BofZ * preX.
 		double[][] C = MatrixUtils.matrixMultiply(BofZ, preX, blockHeight,
