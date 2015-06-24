@@ -95,7 +95,20 @@ public class CalcBCMapTask implements MapTask {
 	 * 
 	 */
 	private void calculateBofZ(double[][] preX) {
-		int tmpI = 0;
+        try {
+            PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.bofz.prex.out.txt");
+            for (float[] a : BofZ){
+                writer.println(Arrays.toString(a));
+            }
+            writer.flush();
+            writer.close();
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        int tmpI = 0;
 		
 		double vBlockValue = (double) -1;
 
