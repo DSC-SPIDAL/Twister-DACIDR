@@ -64,26 +64,26 @@ public class CalcBCMapTask implements MapTask {
 		// Each map task calculates the m th block of the matrix, where m is the
 		// map task number.
 		calculateBofZ(preX);
-        System.out.println("******End of BofZ, going to write the output");
-
-        try {
-            PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.bofzout.txt");
-            for (float[] a : BofZ){
-                writer.println(Arrays.toString(a));
-            }
-            writer.flush();
-            writer.close();
-            System.out.println("****BofZ Done");
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
 
 		// Next we can calculate the BofZ * preX.
 		double[][] C = MatrixUtils.matrixMultiply(BofZ, preX, blockHeight,
 				preX[0].length, N, bz);
 
-		// Send C with the map task number to a reduce task. Which will simply
+        try {
+            PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.mm.out.txt");
+            for (double[] a : C){
+                writer.println(Arrays.toString(a));
+            }
+            writer.flush();
+            writer.close();
+            System.out.println("****MM Done");
+            Thread.sleep(10000);
+        }
+        catch (FileNotFoundException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Send C with the map task number to a reduce task. Which will simply
 		// combine
 		// these parts and form the N x d matrix.
 		MDSMatrixData newMData = new MDSMatrixData(C, blockHeight, C[0].length,
@@ -97,7 +97,7 @@ public class CalcBCMapTask implements MapTask {
 	 * 
 	 */
 	private void calculateBofZ(double[][] preX) {
-        try {
+        /*try {
             PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.bofz.prex.out.txt");
             for (double[] a : preX){
                 writer.println(Arrays.toString(a));
@@ -107,7 +107,7 @@ public class CalcBCMapTask implements MapTask {
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
         int tmpI = 0;
@@ -115,7 +115,7 @@ public class CalcBCMapTask implements MapTask {
 		double vBlockValue = (double) -1;
 
 		double diff = 0;
-        System.out.println("***tCur" + tCur);
+//        System.out.println("***tCur" + tCur);
         if (tCur > 10E-10) {
 			diff = Math.sqrt(2.0 * targetDim)  * tCur;
 		}
