@@ -113,7 +113,7 @@ public class MatrixMultiplyMapTask implements MapTask{
 
         System.out.println("************** Inside cg mm");
         System.out.println(
-            Arrays.toString(X[3]) + "\n" + X[0].length + "\n" + N + "\nisSammon=" + sammonMapping + "\navgDist" + averageOriginalDistance + "\nbz=" + bz + "\nV=" + Arrays.toString(V));
+            (X[3][0]) + "\n" + X[0].length + "\n" + N + "\nisSammon=" + sammonMapping + "\navgDist" + averageOriginalDistance + "\nbz=" + bz + "\nV[0]=" + V[0] + "\nV[1]=" + V[1]);
 
 		// Next we can calculate the BofZ * preX.
 
