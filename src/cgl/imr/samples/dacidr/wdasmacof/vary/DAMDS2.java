@@ -332,6 +332,20 @@ public class DAMDS2 {
 		
 		X = preX;
 		r = calcMM(mmDriver, X);
+        try {
+            PrintWriter writer = new PrintWriter(
+                "/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/cg.mm.out.txt");
+            for (double[] a : r) {
+                writer.println(Arrays.toString(a));
+            }
+            writer.flush();
+            writer.close();
+            System.out.println("****CG MM Done");
+            Thread.sleep(10000);
+        }
+        catch (FileNotFoundException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
 		for(int i = 0; i < N; ++i)
 			for(int j = 0; j < D; ++j){
