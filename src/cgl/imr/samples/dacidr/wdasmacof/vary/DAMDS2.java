@@ -192,8 +192,22 @@ public class DAMDS2 {
 
 
 					X = conjugateGradient(mmDriver, BC, preX, cgCount);
-					
-					stress = calculateStress(stressDriver, X, numMapTasks);
+                    try {
+                        PrintWriter writer = new PrintWriter(
+                            "/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/cg.out.txt");
+                        for (double[] a : X) {
+                            writer.println(Arrays.toString(a));
+                        }
+                        writer.flush();
+                        writer.close();
+                        System.out.println("****CG Done");
+                        Thread.sleep(10000);
+                    }
+                    catch (FileNotFoundException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    stress = calculateStress(stressDriver, X, numMapTasks);
 					diffStress = preStress - stress;
 					preStress = stress;
 					preX = MatrixUtils.copy(X);

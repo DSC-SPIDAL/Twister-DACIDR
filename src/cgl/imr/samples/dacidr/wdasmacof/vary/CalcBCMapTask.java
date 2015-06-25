@@ -69,7 +69,7 @@ public class CalcBCMapTask implements MapTask {
 		double[][] C = MatrixUtils.matrixMultiply(BofZ, preX, blockHeight,
 				preX[0].length, N, bz);
 
-        try {
+        /*try {
             PrintWriter writer = new PrintWriter("/N/u/sekanaya/sali/projects/salsabio/phy/updated_4.20.15/mds/bc.mm.out.txt");
             for (double[] a : C){
                 writer.println(Arrays.toString(a));
@@ -81,7 +81,7 @@ public class CalcBCMapTask implements MapTask {
         }
         catch (FileNotFoundException | InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
 
         // Send C with the map task number to a reduce task. Which will simply
 		// combine
