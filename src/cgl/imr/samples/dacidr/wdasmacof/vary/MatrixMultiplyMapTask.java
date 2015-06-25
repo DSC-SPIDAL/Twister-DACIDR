@@ -10,6 +10,7 @@ import cgl.imr.worker.MemCache;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class MatrixMultiplyMapTask implements MapTask{
 
@@ -109,6 +110,10 @@ public class MatrixMultiplyMapTask implements MapTask{
 		MDSMatrixData mData = (MDSMatrixData) (MemCache.getInstance().get(
 				jobConf.getJobId(), memCacheKey.toString()));
 		double[][] X = mData.getData();
+
+        System.out.println("************** Inside cg mm");
+        System.out.println(
+            Arrays.toString(X[3]) + "\n" + X[0].length + "\n" + N + "\nisSammon=" + sammonMapping + "\navgDist" + averageOriginalDistance + "\nbz=" + bz + "\nV=" + Arrays.toString(V));
 
 		// Next we can calculate the BofZ * preX.
 
