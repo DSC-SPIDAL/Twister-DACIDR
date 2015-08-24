@@ -51,7 +51,7 @@ public class AvgOrigDistanceReduceTask implements ReduceTask {
 			missingDistCount += ((long)averages[5]);
 		}
 		// Only one key from here.
-		double[] avgs = new double[5];
+		double[] avgs = new double[6];
 		//System.out.println(average);
 		avgs[0] = average;
 		avgs[1] = avgSquare;
