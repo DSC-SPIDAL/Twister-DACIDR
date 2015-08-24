@@ -184,7 +184,7 @@ public class DAMDS2 {
 				while ( diffStress >= threshold ) {
 					BC = calculateBC(bcDriver, preX);
 
-					X = conjugateGradient(mmDriver, BC, preX, cgCount);
+					X = conjugateGradient(tCur, itrNum, (int)SMACOF_REAL_ITER, mmDriver, BC, preX, cgCount);
 					
 					stress = calculateStress(stressDriver, X, numMapTasks);
 					diffStress = preStress - stress;
@@ -303,7 +303,7 @@ public class DAMDS2 {
 	}
 
 
-	private static double[][] conjugateGradient(TwisterModel mmDriver, 
+	private static double[][] conjugateGradient(double CurrentTemp, int LocalIteration, int GlobalIteration, TwisterModel mmDriver,
 			double[][] BC, double[][] preX, Ref<Integer> outCgCount) throws TwisterException{
 		double[][] X = null;
 		double[][] r = new double[N][D];
@@ -322,6 +322,7 @@ public class DAMDS2 {
 		double rTr = innerProductCalculation(r);
 		// Adding relative value test for termination as suggested by Dr. Fox.
 		double testEnd = rTr * CG_THRESHOLD;
+        double  rTrStart = rTr; // GCF
 
 		//System.out.println("1");
 		while(cgCount < CG_ITER){
@@ -358,7 +359,10 @@ public class DAMDS2 {
 				for(int j = 0; j < D; ++j)
 					p[i][j] = r[i][j] + beta * p[i][j];
 
-			
+
+            if (cgCount < 4) {  // GCF
+                System.out.println("T " + CurrentTemp + " Global " + GlobalIteration + " Local " + LocalIteration + " CG# " + cgCount + " Start " + rTrStart + " Now " + rTr);
+            }
 		}
 		outCgCount.setValue(outCgCount.getValue() + cgCount);
 //		System.out.println("CGCount: " + cgCount + " TestEnd: " + testEnd + " rTr: " + rTr);
