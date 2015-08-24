@@ -60,6 +60,7 @@ public class DAMDS2 {
 	static double avgOrigDistance;
 	static double sumOrigDistanceSquare;
 	static double avgOrigDistanceSquare;
+	static double positiveMinOrigDistance;
 	static double maxOrigDistance;
 
 	static double tMax;
@@ -163,7 +164,7 @@ public class DAMDS2 {
 
 			
 			tMax = calculateMaxT(maxOrigDistance, D);
-			tMin = (0.01 * tMax < 0.01) ? 0.01 * tMax : 0.01;
+			tMin = 0.5 * positiveMinOrigDistance / Math.sqrt(2.0 * D);
 			tCur = alpha * tMax;
 
 			mainTimer.stop();
@@ -730,13 +731,14 @@ public class DAMDS2 {
 				double[] combinerData = ((DoubleArray) combinerResult.get(key)).getData();
 				avgOrigDistance = combinerData[0];
 				sumOrigDistanceSquare = combinerData[1];
-				maxOrigDistance = combinerData[2];
+                positiveMinOrigDistance = combinerData[2];
+				maxOrigDistance = combinerData[3];
 				// including diagonal elements if they qualify.
 				// Qualification criteria for a diagonal element is,
 				// 	sammonMapping && distance >=0 -> Yes
 				//	else weight != 0 && distance >=0 -> yes
-				long usedPairCount = (long) combinerData[3];
-				long missingDistCount = (long) combinerData[4];
+				long usedPairCount = (long) combinerData[4];
+				long missingDistCount = (long) combinerData[5];
 				System.out.println("  Number of used pairs: " + usedPairCount);
 				System.out.println("  Missing distances percentage: " + missingDistCount*100.0/usedPairCount);
 				avgOrigDistance = avgOrigDistance/usedPairCount;

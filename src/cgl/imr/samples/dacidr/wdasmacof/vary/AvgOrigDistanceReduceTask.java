@@ -30,6 +30,7 @@ public class AvgOrigDistanceReduceTask implements ReduceTask {
 			List<Value> values) throws TwisterException {
 		double average = 0;
 		double avgSquare = 0;
+        double positiveMin = Double.MAX_VALUE;
 		double maxDelta = 0.0;
 		long pairCount = 0;
 		long missingDistCount = 0;
@@ -39,21 +40,25 @@ public class AvgOrigDistanceReduceTask implements ReduceTask {
 			averages = ((DoubleArray) val).getData();
 			average += averages[0];
 			avgSquare += averages[1];
-			
-			if (maxDelta < averages[2]) {
-				maxDelta = averages[2];
+
+            if (averages[2] < positiveMin){
+                positiveMin = averages[2];
+            }
+			if (maxDelta < averages[3]) {
+				maxDelta = averages[3];
 			}
-			pairCount += ((long)averages[3]);
-			missingDistCount += ((long)averages[4]);
+			pairCount += ((long)averages[4]);
+			missingDistCount += ((long)averages[5]);
 		}
 		// Only one key from here.
 		double[] avgs = new double[5];
 		//System.out.println(average);
 		avgs[0] = average;
 		avgs[1] = avgSquare;
-		avgs[2] = maxDelta;
-		avgs[3] = pairCount;
-		avgs[4] = missingDistCount;
+		avgs[2] = positiveMin;
+		avgs[3] = maxDelta;
+		avgs[4] = pairCount;
+		avgs[5] = missingDistCount;
 		collector.collect(new IntKey(0), new DoubleArray(avgs, avgs.length));
 	}
 }

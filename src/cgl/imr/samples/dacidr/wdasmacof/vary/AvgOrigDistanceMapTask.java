@@ -82,6 +82,7 @@ public class AvgOrigDistanceMapTask implements MapTask {
 		int width = rowData.getWidth();
 		double average = 0;
 		double avgSquare = 0;
+        double positiveMin = Double.MAX_VALUE;
 		double maxDelta = 0.0;
 		long pairCount = 0;
 		long missingDistCount = 0;
@@ -100,6 +101,9 @@ public class AvgOrigDistanceMapTask implements MapTask {
 				average += realD;
 				avgSquare += (realD * realD);
 
+                if (realD < positiveMin && realD > 0){
+                    positiveMin = realD;
+                }
 				if (maxDelta < realD) {
                     maxDelta = realD;
                 }
@@ -107,12 +111,13 @@ public class AvgOrigDistanceMapTask implements MapTask {
 			}
 		}
 		//System.out.println(average);
-		double[] avgs = new double[5];
+		double[] avgs = new double[6];
 		avgs[0] = average;
 		avgs[1] = avgSquare;
-		avgs[2] = maxDelta;
-		avgs[3] = pairCount;
-		avgs[4] = missingDistCount;
+		avgs[2] = positiveMin;
+		avgs[3] = maxDelta;
+		avgs[4] = pairCount;
+		avgs[5] = missingDistCount;
 		collector
 				.collect(new StringKey("stress-key"), new DoubleArray(avgs, avgs.length));
 	}

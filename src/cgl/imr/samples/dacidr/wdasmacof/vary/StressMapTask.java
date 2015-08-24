@@ -143,7 +143,7 @@ public class StressMapTask implements MapTask {
 					}
 					double heatDist = origD - diff;
 					double d = origD >= diff 
-								? heatDist - dist : 0;
+								? heatDist - dist : -dist;
 					sigma += weight * d * d;
 				}
 			}
