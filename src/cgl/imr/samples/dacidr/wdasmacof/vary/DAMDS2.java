@@ -142,6 +142,7 @@ public class DAMDS2 {
 			System.out.println(" SumSquareOrgDistance: " + sumOrigDistanceSquare);
 			System.out.println(" MaxOrigDistance: " + maxOrigDistance);
 
+			System.out.println("****" + initFile + " " + (Strings.isNullOrEmpty(initFile)));
 			double[][] preX = Strings.isNullOrEmpty(initFile) ? generateInitMapping(N, D) : readInitMapping(initFile, N, D);
 
 			TwisterModel stressDriver = configureCalculateStress(numMapTasks,
