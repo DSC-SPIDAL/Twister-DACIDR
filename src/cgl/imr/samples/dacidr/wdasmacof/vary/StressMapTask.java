@@ -138,8 +138,10 @@ public class StressMapTask implements MapTask {
 					double dist;
 					if (j != i) {
 						dist = calculateDistance(preXData, preXData[0].length, i, j);
+                        System.out.println("** [" + i + "," + j + "] w=" + weight + "origD=" + origD + "eucD=" + dist);
 					} else {
 						dist = 0;
+                        System.out.println("** [" + i + "," + j + "] w=" + weight + "origD=" + origD + "eucD=" + dist);
 					}
 					double heatDist = origD - diff;
 					double d = origD >= diff 
