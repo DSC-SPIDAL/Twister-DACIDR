@@ -84,7 +84,7 @@ public class DAMDS2 {
 
 		Stopwatch mainTimer = Stopwatch.createStarted();
 
-		if (args.length != 17) {
+		if (args.length < 17) {
 			System.out.println("Usage: ");
 			System.out.println("[1. Num map tasks ]");
 			System.out.println("[2. Input Folder]");
@@ -124,7 +124,7 @@ public class DAMDS2 {
         sammonMapping = Boolean.parseBoolean(args[14]);
         distanceTransform = Double.parseDouble(args[15]);
         bigEndian = Boolean.parseBoolean(args[16]);
-        String initFile = args.length > 16 ? args[16] : "";
+        String initFile = args.length > 17 ? args[17] : "";
 
 		System.out.println("== DAMDS run started on " + new Date() + " ==");
 		printParameters(true, String.valueOf(numMapTasks), inputFolder, inputPrefix, weightPrefix, idsFile, labelsFile,
