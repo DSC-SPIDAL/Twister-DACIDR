@@ -14,13 +14,18 @@ import cgl.imr.types.DoubleArray;
 import cgl.imr.types.DoubleValue;
 import cgl.imr.types.StringValue;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import org.safehaus.uuid.UUIDGenerator;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -98,6 +103,7 @@ public class DAMDS2 {
 			System.out.println("[15. Sammon mapping (boolean)]");
 			System.out.println("[16. Distance Transform (double)]");
 			System.out.println("[17. BigEndian (boolean)]");
+			System.out.println("[18. Initialization file (optional)]");
 			System.exit(0);
 		}
 
@@ -118,6 +124,7 @@ public class DAMDS2 {
         sammonMapping = Boolean.parseBoolean(args[14]);
         distanceTransform = Double.parseDouble(args[15]);
         bigEndian = Boolean.parseBoolean(args[16]);
+        String initFile = args.length > 16 ? args[16] : "";
 
 		System.out.println("== DAMDS run started on " + new Date() + " ==");
 		printParameters(true, String.valueOf(numMapTasks), inputFolder, inputPrefix, weightPrefix, idsFile, labelsFile,
@@ -135,7 +142,7 @@ public class DAMDS2 {
 			System.out.println(" SumSquareOrgDistance: " + sumOrigDistanceSquare);
 			System.out.println(" MaxOrigDistance: " + maxOrigDistance);
 
-			double[][] preX = generateInitMapping(N, D);
+			double[][] preX = Strings.isNullOrEmpty(initFile) ? generateInitMapping(N, D) : readInitMapping(initFile, N, D);
 
 			TwisterModel stressDriver = configureCalculateStress(numMapTasks,
 					inputFolder, inputPrefix, weightPrefix, idsFile);
@@ -259,6 +266,32 @@ public class DAMDS2 {
 		}
 		System.exit(0);
 	}
+
+    private static double[][] readInitMapping(
+        String initialPointsFile, int numPoints, int targetDimension) {
+        try (BufferedReader br = Files.newBufferedReader(
+            Paths.get(initialPointsFile), Charset.defaultCharset())){
+            double x[][] = new double[numPoints][targetDimension];
+            String line;
+            Pattern pattern = Pattern.compile("[\t]");
+            int row = 0;
+            while ((line = br.readLine()) != null) {
+                if (Strings.isNullOrEmpty(line))
+                    continue; // continue on empty lines - "while" will break on null anyway;
+
+                String[] splits = pattern.split(line.trim());
+
+                for (int i = 0; i < splits.length; ++i){
+                    x[row][i] = Double.parseDouble(splits[i].trim());
+                }
+                ++row;
+            }
+            return x;
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 	public static String formatElapsedMillis(long elapsed){
 		String format = "%dd:%02dH:%02dM:%02dS:%03dmS";
