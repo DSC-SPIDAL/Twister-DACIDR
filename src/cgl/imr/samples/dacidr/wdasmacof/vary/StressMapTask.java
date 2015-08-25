@@ -98,81 +98,67 @@ public class StressMapTask implements MapTask {
 		}
 	}
 
-	public void map(MapOutputCollector collector, Key key, Value val)
-			throws TwisterException {
+    public void map(MapOutputCollector collector, Key key, Value val)
+        throws TwisterException {
 
-        try(BufferedWriter bw = Files.newBufferedWriter(Paths.get("/N/u/sekanaya/sali/projects/salsabio/nucleotide/data2/1k/mds/1n/stress.map.out.txt"))) {
+        StringValue memCacheKey = (StringValue) val;
+        MDSMatrixData mData = (MDSMatrixData) (MemCache.getInstance().get(
+            jobConf.getJobId(), memCacheKey.toString()));
 
-            PrintWriter pw = new PrintWriter(bw, true);
+        int rowOffset = deltaBlock.getRowOffset();
 
-            StringValue memCacheKey = (StringValue) val;
-            MDSMatrixData mData = (MDSMatrixData) (MemCache.getInstance().get(
-                jobConf.getJobId(), memCacheKey.toString()));
+        double[][] preXData = mData.getData();
+        double tmpCurT = mData.getCurT();
 
-            int rowOffset = deltaBlock.getRowOffset();
+        short deltaMatData[][] = deltaBlock.getData();
 
-            double[][] preXData = mData.getData();
-            double tmpCurT = mData.getCurT();
+        int tmpI = 0;
 
-            short deltaMatData[][] = deltaBlock.getData();
+        double sigma = 0.0;
 
-            int tmpI = 0;
+        if (tmpCurT != tCur) {
+            tCur = tmpCurT;
+        }
 
-            double sigma = 0.0;
-
-            if (tmpCurT != tCur) {
-                tCur = tmpCurT;
-            }
-
-            double diff = 0;
-            if (tCur > 10E-10) {
-                diff = Math.sqrt(2.0 * targetDim) * tCur;
-            }
-            for (int i = rowOffset; i < rowOffset + rowHeight; i++) {
-                tmpI = i - rowOffset;
-                for (int j = 0; j < N; j++) {
-                    double origD = deltaMatData[tmpI][j] * 1.0 / Short.MAX_VALUE;
-                    boolean missingDist = origD < 0;
-                    origD = distanceTransform != 1.0 ? Math
-                        .pow(origD, distanceTransform) : origD;
-                    double weight = missingDist ? 0.0 : (sammonMapping ? 1.0 /
-                                                                         Math.max(
-                                                                             origD,
-                                                                             0.001 *
-                                                                             averageOriginalDistance)
-                                                                       :
-                                                         weights[tmpI][j]);
-                    if (!sammonMapping && missingDist) {
-                        weights[tmpI][j] = 0; // for the non Sammon case we rely on user given weights, but in the case of missing distances override user weight by zero
+        double diff = 0;
+        if (tCur > 10E-10) {
+            diff = Math.sqrt(2.0 * targetDim) * tCur;
+        }
+        for (int i = rowOffset; i < rowOffset + rowHeight; i++) {
+            tmpI = i - rowOffset;
+            for (int j = 0; j < N; j++) {
+                double origD = deltaMatData[tmpI][j] * 1.0 / Short.MAX_VALUE;
+                boolean missingDist = origD < 0;
+                origD = distanceTransform != 1.0 ? Math
+                    .pow(origD, distanceTransform) : origD;
+                double weight =
+                    missingDist ? 0.0 : (sammonMapping ? 1.0 / Math.max(
+                        origD, 0.001 * averageOriginalDistance)
+                                                       : weights[tmpI][j]);
+                if (!sammonMapping && missingDist) {
+                    weights[tmpI][j] =
+                        0; // for the non Sammon case we rely on user given
+                        // weights, but in the case of missing distances
+                        // override user weight by zero
+                }
+                if (weight != 0) {
+                    double dist;
+                    if (j != i) {
+                        dist = calculateDistance(
+                            preXData, preXData[0].length, i, j);
                     }
-                    if (weight != 0) {
-                        double dist;
-                        if (j != i) {
-                            dist = calculateDistance(
-                                preXData, preXData[0].length, i, j);
-                            pw.println(
-                                "** [" + i + "," + j + "] w=" + weight +
-                                " origD=" + origD + " eucD=" + dist);
-                        }
-                        else {
-                            dist = 0;
-                            pw.println(
-                                "** [" + i + "," + j + "] w=" + weight +
-                                " origD=" + origD + " eucD=" + dist);
-                        }
-                        double heatDist = origD - diff;
-                        double d = origD >= diff ? heatDist - dist : -dist;
-                        sigma += weight * d * d;
+                    else {
+                        dist = 0;
                     }
+                    double heatDist = origD - diff;
+                    double d = origD >= diff ? heatDist - dist : -dist;
+                    sigma += weight * d * d;
                 }
             }
-            // Send the partial sigma.
-            collector.collect(
-                new StringKey("stress-map-to-reduce-key"), new DoubleValue(sigma));
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Send the partial sigma.
+        collector.collect(
+            new StringKey("stress-map-to-reduce-key"), new DoubleValue(sigma));
     }
 
 	private static double calculateDistance(double[][] origMat, int vecLength,
