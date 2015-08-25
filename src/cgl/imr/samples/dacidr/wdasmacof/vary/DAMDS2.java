@@ -131,7 +131,7 @@ public class DAMDS2 {
 						outputFile, String.valueOf(threshold), String.valueOf(D), String.valueOf(alpha),
 						String.valueOf(N), String.valueOf(finalWeightPrefix), String.valueOf(CG_ITER),
 						String.valueOf(CG_THRESHOLD), String.valueOf(sammonMapping), String.valueOf(distanceTransform),
-						String.valueOf(bigEndian));
+						String.valueOf(bigEndian),initFile);
 
 		
 		try {
@@ -269,6 +269,7 @@ public class DAMDS2 {
 
     private static double[][] readInitMapping(
         String initialPointsFile, int numPoints, int targetDimension) {
+        System.out.println("Reading initialization points from file: " + initialPointsFile);
         try (BufferedReader br = Files.newBufferedReader(
             Paths.get(initialPointsFile), Charset.defaultCharset())){
             double x[][] = new double[numPoints][targetDimension];
@@ -312,7 +313,7 @@ public class DAMDS2 {
 				new String[]{"Num map tasks", "Input Folder", "Input File Prefix", "Weighted File Prefix", "IDs File",
 						"Label Data File", "Output File", "Threshold value", "The Target Dimension",
 						"Cooling parameter (alpha)", "Input Data Size", "Final Weight Prefix", "CG Iterations",
-						"CG Threshold", "Sammon mapping", "Distance Transform (double)", "BigEndian (boolean)"};
+						"CG Threshold", "Sammon mapping", "Distance Transform (double)", "BigEndian (boolean)", "Initialization File"};
 		Optional<Integer> maxLength = Arrays.stream(params).map(String::length).reduce(Math::max);
 		if (!maxLength.isPresent()) return;
 		final int max = maxLength.get();
